@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	//skipped initialization above
 	MPI_Init(&argc, &argv);
 	MPI_Status status; 
+	int ierr; 
 
 	int globalRank, globalSize, colour; 
 	MPI_Comm_rank(MPI_COMM_WORLD,&globalRank); 
@@ -62,25 +63,32 @@ int main(int argc, char** argv)
 		// new window in new communicator to connect both processes 
 		MPI_Win win; 
 		int soi = sizeof(int);
-		MPI_Win_create(array, soi*N, soi, MPI_INFO_NULL, newComm, &win);
+		ierr = MPI_Win_create(array, soi*N, soi, MPI_INFO_NULL, newComm, &win);
+		if(ierr!=MPI_SUCCESS)
+		{
+			printf("errors \n"); 
+		}
 
 		// initialise variables if process is comp process
-		MPI_Win_fence(0, win); // open fence 
+		// MPI_Win_fence(0, win); // open fence 
+		MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, 0, win); 
 		if(newRank == 0) // comp process 
 		{
 			initialise(array, i); 
 		} 
-		MPI_Win_fence(0, win); // close fence 
-
+		// MPI_Win_fence(0, win); // close fence 
+		MPI_Win_unlock(0, win); 
 
 		// read variables if process is io process 
-		MPI_Win_fence(0, win); // open fence 
+		// MPI_Win_fence(0, win); // open fence 
+		MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 1, 0, win); 
 		if(newRank == 1)
 		{
 			int targetRank = 0; 
 			MPI_Get(array, N, MPI_INT, targetRank, 0, N, MPI_INT, win);
 		}
-		MPI_Win_fence(0, win); // close fence 
+		MPI_Win_unlock(1, win); 
+		// MPI_Win_fence(0, win); // close fence 
 		MPI_Win_free(&win);
 		
 		// print values 
