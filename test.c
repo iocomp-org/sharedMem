@@ -72,6 +72,7 @@ int main(int argc, char** argv)
 		} 
 		MPI_Win_fence(0, win); // close fence 
 
+
 		// read variables if process is io process 
 		MPI_Win_fence(0, win); // open fence 
 		if(newRank == 1)
