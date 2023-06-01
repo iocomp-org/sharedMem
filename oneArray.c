@@ -35,8 +35,8 @@ int main(int argc, char** argv)
 
 	// allocate memory
 	int soi = sizeof(int);
-	// int* array = (int *)malloc(soi*N); 
-	int array[N]; 
+	int* array = (int *)malloc(soi*N); 
+	// int array[N]; 
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -55,7 +55,6 @@ int main(int argc, char** argv)
 	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 	MPI_Win win; 
 
-
 	// start timer 
 	double start, stop, diff; 
 	start = MPI_Wtime();
@@ -64,7 +63,7 @@ int main(int argc, char** argv)
 	if(newRank == 0)  
 	{
 		initialise(array, 5); 
-		printf("memory initialised by newRank %i \n", newRank); 
+		printf("memory initialised by globalrank %i and newRank %i \n",globalRank, newRank); 
 		ierr = MPI_Win_create(array, soi*N, soi, MPI_INFO_NULL, newComm, &win);
 		error_check(ierr); 
 	} 
@@ -72,27 +71,32 @@ int main(int argc, char** argv)
 	else
 	{
 		// non 0 rank creates window using NULL pointer 
+		printf("null window created by globalrank %i and newRank %i \n",globalRank, newRank); 
 		ierr = MPI_Win_create(NULL, 0,1, MPI_INFO_NULL, newComm, &win);
 		error_check(ierr); 
 	} 
 	
 	// start window 
+	printf("MPI window fence created globalrank %i and newRank %i \n",globalRank, newRank); 
 	MPI_Win_fence(MPI_MODE_NOPRECEDE,win);
+
 	if(newRank != 0)
 	{
 		MPI_Get(array, N, MPI_INT, 0,0,N, MPI_INT, win); 
+		printf("MPI get using globalrank %i and newRank %i \n",globalRank, newRank); 
 	} 
-	MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
 
+	MPI_Win_fence(MPI_MODE_NOSUCCEED, win);
 	MPI_Win_free(&win);
+	printf("MPI window freed by globalrank %i and newRank %i \n",globalRank, newRank); 
 	// end window
 	
 	// print values 
-	if(newRank != 0)
-	{
-		printf("Global rank %i reading array with value set to be 5 \n",globalRank); 
-		printData(array); 
-	} 
+	//if(newRank != 0)
+	//{
+	//	printf("Global rank %i reading array with value set to be 5 \n",globalRank); 
+	//	printData(array); 
+	//} 
 
 	stop = MPI_Wtime();
 	diff = stop - start;
@@ -101,6 +105,8 @@ int main(int argc, char** argv)
 			globalRank,  diff);
 
 	MPI_Finalize();
+	free(array); 
+	array = NULL; 
 	return 0;
 } 
 
