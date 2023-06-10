@@ -5,14 +5,6 @@
 #define SCALAR 5 
 #define STARTING_VAL 1
 
-void initialise(int* array,int value)
-{
-	for(int j = 0; j < N; j++)
-	{	
-		array[j] = value; 
-	} 
-}
-
 void printData(int* recv)
 {
 	for(int i = 0; i < N; i++)
@@ -22,18 +14,10 @@ void printData(int* recv)
 	printf("\n"); 
 } 
 
-MPI_Win createWindow(int len, MPI_Comm newComm, int* array)
-{
-	int soi = sizeof(int); 
-	int ierr;
-	MPI_Win win; 
-	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
-	error_check(ierr); 
-	return win; 
-} 
-
-// function recieves pointer array, copies this into allocated shared memory
-// array 
+/* 
+ * function recieves pointer array, copies this into allocated shared memory
+ * array 
+ */ 
 MPI_Win dataSend(int len, MPI_Comm newComm, int* values)
 {
 	int soi = sizeof(int); 
@@ -63,6 +47,10 @@ MPI_Win dataSend(int len, MPI_Comm newComm, int* values)
 	
 } 
 
+/*
+ * function calls mpi barrier to sync up with io process 
+ * so that it finishes accessing data and frees up window 
+ */ 
 void dataSendComplete(MPI_Comm newComm, MPI_Win win)
 {
 	// signal to I/O process to finish working
@@ -73,6 +61,10 @@ void dataSendComplete(MPI_Comm newComm, MPI_Win win)
 	error_check(ierr); 
 } 
 
+/*
+ * function gets shared array pointer using mpi win shared query 
+ * and prints out data as proxy for writing to file 
+ */ 
 void ioProcess(MPI_Comm newComm)
 {
 	int* array; 	
