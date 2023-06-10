@@ -20,54 +20,89 @@ void printData(int* recv)
 	printf("\n"); 
 } 
 
-void computeProcess(int len, MPI_Comm newComm, int* array, int val)
+MPI_Win createWindow(int len, MPI_Comm newComm, int* array)
 {
-		int soi = sizeof(int); 
-		int ierr;
-		MPI_Win win; 
-		ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
-		error_check(ierr); 
-
-		// create lock and initialise arrays 
-		MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, MPI_MODE_NOCHECK, win);
-		initialise(array,val); 
-		MPI_Win_unlock(0,win);
-
-		MPI_Barrier(newComm); 
-		MPI_Barrier(newComm); 
-
-		ierr = MPI_Win_free(&win);
-		error_check(ierr); 
-		//printf("MPI window freed by globalrank %i and newRank %i \n",globalRank, newRank); 
+	int soi = sizeof(int); 
+	int ierr;
+	MPI_Win win; 
+	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
+	error_check(ierr); 
+	return win; 
 } 
 
-void ioProcess(MPI_Comm newComm, int* array)
+void work_block(int* array) // resembles COPY function of STREAM 
 {
-		int ierr; 	
-		int soi = sizeof(int); 
-		MPI_Win win; 
-		ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array, &win); 
-		error_check(ierr); 
+	int i = 0; 
+	int* COPY;
+	COPY = (int *)(malloc(sizeof(int) * N)); 
+	if(COPY == NULL) 
+	{
+		printf("malloc issue, quitting \n"); 	
+		exit(1); 
+	} 
+	for(i = 0; i < N; i ++)
+	{
+		COPY[i] = array[i]; 		
+	}
+	free(COPY); 
+	COPY = NULL; 
+}
 
-		long int arraySize; 
-		int dispUnit; 
-		ierr = MPI_Win_shared_query(win, 0, &arraySize, &dispUnit, &array); 
-		error_check(ierr); 
+void computeProcess(int len, MPI_Comm newComm, int val)
+{
+	int soi = sizeof(int); 
+	int* array; 
+	int ierr;
+	MPI_Win win; 
+	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
+	error_check(ierr); 
+	//MPI_Win win = createWindow(len, newComm, array); 
 
-		MPI_Barrier(newComm);  // wait for compute process to finish allocating data 
-		printData(array); 
-		MPI_Barrier(newComm); 
+	// create lock and initialise arrays 
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, 0, MPI_MODE_NOCHECK, win);
+	printf("After mpi window lock \n"); 
+	initialise(array,val); 
+	printf("After initialising array \n"); 
+	MPI_Win_unlock(0,win);
+	printf("After mpi window unlock \n"); 
 
-		ierr = MPI_Win_free(&win);
-		error_check(ierr); 
-		// printf("MPI window freed by globalrank %i and newRank %i \n",globalRank, newRank); 
+
+	MPI_Barrier(newComm); 
+	work_block(array); // do work while I/O process is writing to file 
+	MPI_Barrier(newComm); 
+
+	ierr = MPI_Win_free(&win);
+	error_check(ierr); 
+
+} 
+
+void ioProcess(MPI_Comm newComm)
+{
+	int* array; 	
+	int ierr; 	
+	int soi = sizeof(int); 
+	MPI_Win win; 
+	ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array, &win); 
+	error_check(ierr); 
+
+	long int arraySize; 
+	int dispUnit; 
+	ierr = MPI_Win_shared_query(win, 0, &arraySize, &dispUnit, &array); 
+	error_check(ierr); 
+
+	MPI_Barrier(newComm);  // wait for compute process to finish allocating data 
+	printData(array); // replace for writing to file  
+	MPI_Barrier(newComm); 
+
+	ierr = MPI_Win_free(&win);
+	error_check(ierr); 
+	// printf("MPI window freed by globalrank %i and newRank %i \n",globalRank, newRank); 
 } 
 
 int main(int argc, char** argv)
 {
 	//skipped initialization above
 	MPI_Init(&argc, &argv);
-	MPI_Status status; 
 	int ierr; 
 
 	// MPI related initialisations 
@@ -75,11 +110,6 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD,&globalRank); 
 	MPI_Comm_size(MPI_COMM_WORLD,&globalSize); 
 	MPI_Comm newComm; 
-	
-	int* array1; 
-	int* array2; 
-	int* array3; 
-	int soi = sizeof(int);
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -105,17 +135,17 @@ int main(int argc, char** argv)
 	// comp process initialises array and creates a window with that array 
 	if(newRank == 0)  
 	{
-		computeProcess(N, newComm, array1, 5); 
-		computeProcess(N, newComm, array2, 6); 
-		computeProcess(N, newComm, array3, 7); 
+		computeProcess(N, newComm,  5); 
+		computeProcess(N, newComm,  6); 
+		computeProcess(N, newComm,  7); 
 	} 
 
 	// io process access that memory and prints out the data 
 	else 
 	{
-		ioProcess(newComm, array1); 
-		ioProcess(newComm, array2); 
-		ioProcess(newComm, array3); 
+		ioProcess(newComm); 
+		ioProcess(newComm); 
+		ioProcess(newComm); 
 	} 
 
 	stop = MPI_Wtime();
