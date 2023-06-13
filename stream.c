@@ -18,45 +18,39 @@ void printData(int* recv)
  * function recieves pointer array, copies this into allocated shared memory
  * array 
  */ 
-MPI_Win dataSend(int len, MPI_Comm newComm, int* values)
+struct winElements winAlloc(int len, MPI_Comm newComm)
 {
 	int soi = sizeof(int); 
-	int* array; 
 	int ierr;
 	MPI_Win win; 
-	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
-	error_check(ierr); 
-	//MPI_Win win = createWindow(len, newComm, array); 
-
-	// create lock and initialise arrays 
-	MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win);
-	printf("After mpi window lock \n"); 
-	
-	// copy array from values into shared array 
-	for(int i = 0; i < N; i ++)
+	int rank;
+	MPI_Comm_rank(newComm, &rank); 
+	int *array; 
+	struct winElements output; 
+	// allocate windows for compute and I/O processes 
+	if(rank == 0)
 	{
-		array[i] = values[i]; 
-	} 
-	printf("After initialising array \n"); 
-	MPI_Win_unlock(0,win);
-	printf("After mpi window unlock \n"); 
-
-	MPI_Barrier(newComm);  // signal to I/O process to start working
-	
-	return(win); 
-	
-} 
+		ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
+		error_check(ierr);
+	}
+	else
+	{
+		ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array, &win); 
+		error_check(ierr);
+	}
+	output.win = win; 
+	output.array = array;  
+	return(output); 
+}
 
 /*
  * function calls mpi barrier to sync up with io process 
  * so that it finishes accessing data and frees up window 
  */ 
-void dataSendComplete(MPI_Comm newComm, MPI_Win win)
+void dataSendComplete(MPI_Win win)
 {
-	// signal to I/O process to finish working
-	MPI_Barrier(newComm); 
-	
 	// free window and free shared memory pointer 
+	printf("MPI win free comp server reached\n"); 
 	int ierr = MPI_Win_free(&win);
 	error_check(ierr); 
 } 
@@ -65,27 +59,22 @@ void dataSendComplete(MPI_Comm newComm, MPI_Win win)
  * function gets shared array pointer using mpi win shared query 
  * and prints out data as proxy for writing to file 
  */ 
-void ioProcess(MPI_Comm newComm)
+void ioProcess(MPI_Comm newComm, MPI_Win win, int* array)
 {
-	int* array; 	
-	int ierr; 	
-	int soi = sizeof(int); 
-	MPI_Win win; 
-	ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array, &win); 
-	error_check(ierr); 
-
 	long int arraySize; 
 	int dispUnit; 
+	int ierr; 
 	ierr = MPI_Win_shared_query(win, 0, &arraySize, &dispUnit, &array); 
 	error_check(ierr); 
 
+	printf("Reached MPI barrier ioServer \n"); 
 	MPI_Barrier(newComm);  // wait for compute process to finish allocating data 
-	printData(array); // replace for writing to file  
-	MPI_Barrier(newComm); 
 
-	ierr = MPI_Win_free(&win);
-	error_check(ierr); 
-	// printf("MPI window freed by globalrank %i and newRank %i \n",globalRank, newRank); 
+	// lock window till array is printed/written out 
+	MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win);
+	printData(array); // replace for writing to file  
+	MPI_Win_unlock(0,win);
+	printf("MPI window unlocked after printing by ioServer \n"); 
 } 
 
 int main(int argc, char** argv)
@@ -121,80 +110,113 @@ int main(int argc, char** argv)
 	double start, stop, diff; 
 	start = MPI_Wtime();
 
-	// comp process initialises array and creates a window with that array 
+	// rank 0: init(a)
+
+	// LOOP
+
+	// rank 1: finish writing c
+	// rank 0; c=a
+	// rank 1: start writing c
+	// rank 1: finish writing b
+	// rank 0: b=scale(c)
+	// rank 1; start writing b
+	// rank 1: finish writing c
+	// rank 0; c = a+b
+	// rank 1: start writing c
+	// rank 1: finish writing a
+	// rank 0: a = b + scale*c
+	// rank 1: start writing a
+
+	// END LOOP
+
+	// initialise windows for each array in both Compute and I/O process
+	MPI_Win win_A, win_B, win_C;
+	int* a; 
+	int* b; 
+	int* c;  
+	struct winElements outputWin; 
+	// c array 
+	outputWin = winAlloc(N, newComm); 
+	win_C = outputWin.win; 
+	c = outputWin.array; 
+	// b array 
+	outputWin = winAlloc(N, newComm); 
+	win_B = outputWin.win; 
+	b = outputWin.array; 
+	// a array 
+	outputWin = winAlloc(N, newComm); 
+	win_A = outputWin.win; 
+	a = outputWin.array; 
+
+
 	if(newRank == 0)  
 	{
-		MPI_Win win_copy, win_add, win_scale, win_triad; 
-		int* a; 
-		a = (int *)malloc(sizeof(int)*N); 
-		if(a == NULL)
-		{
-			exit(1); 
-		}
-		int* c; 
-		c = (int *)malloc(sizeof(int)*N); 
-		if(c == NULL)
-		{
-			exit(1); 
-		}
-		int* b; 
-		b = (int *)malloc(sizeof(int)*N); 
-		if(b == NULL)
-		{
-			exit(1); 
-		}
-		
+		// comp process initialises array and creates a window with that array 
+
 		// initialise a
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win_A);
 		for(int i = 0; i < N; i++)
 		{
 			a[i] = STARTING_VAL;  
 		}
+		MPI_Win_unlock(0,win_A);
 
 		// COPY
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win_C);
+		printf("After mpi window lock for C \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			c[i] = a[i]; 
 		}
-		win_copy = dataSend(N, newComm,  c); 
-		// wait for C 
-		dataSendComplete(newComm, win_copy); 
+		MPI_Win_unlock(0,win_C);
+		printf("After mpi window unlock for C \n"); 
+		MPI_Barrier(newComm); // start printing  
 
 		// SCALE
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win_C);
+		printf("After mpi window lock for B \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			b[i] = SCALAR * c[i]; 
 		}
-		win_scale = dataSend(N, newComm,  b); 
-		// wait for B
-		dataSendComplete(newComm, win_scale); 
-
+		MPI_Win_unlock(0,win_C);
+		printf("After mpi window unlock for C \n"); 
+		MPI_Barrier(newComm); // start printing  
+	
 		// ADD 
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win_C);
+		printf("After mpi window lock for C \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			c[i] = a[i] + b[i]; 
 		}
-		win_add = dataSend(N, newComm,  c); 
-		// wait for C	
-		dataSendComplete(newComm, win_add); 
+		MPI_Win_unlock(0,win_C);
+		MPI_Barrier(newComm); // start printing  
 
 		// TRIAD 
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, MPI_MODE_NOCHECK, win_A);
+		printf("After mpi window lock for C \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			a[i] = b[i] + SCALAR*c[i]; 
 		}
-		win_triad = dataSend(N, newComm,  a); 
-		// wait for A
-		dataSendComplete(newComm, win_triad); 
-	} 
+		MPI_Win_unlock(0,win_A);
+		MPI_Barrier(newComm); // start printing  
 
-	// io process access that memory and prints out the data 
+	} 
 	else 
 	{
-		ioProcess(newComm); 
-		ioProcess(newComm); 
-		ioProcess(newComm); 
-		ioProcess(newComm); 
+		// io process access that memory and prints out the data 
+		ioProcess(newComm, win_C, c); 
+		ioProcess(newComm, win_B, b); 
+		ioProcess(newComm, win_C, c); 
+		ioProcess(newComm, win_A, a); 
 	} 
+
+	// deallocate windows 
+	dataSendComplete(win_B); 
+	dataSendComplete(win_C); 
+	dataSendComplete(win_A); 
 
 	stop = MPI_Wtime();
 	diff = stop - start;
