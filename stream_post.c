@@ -81,12 +81,13 @@ void ioProcess(MPI_Comm newComm, MPI_Win win, int* array)
 	/* Compute group consists of rank 0*/
 	MPI_Group_incl(comm_group,1,ranks,&group); 
 	
-	printf("Reached MPI barrier ioServer \n"); 
 	// MPI_Barrier(newComm);  // wait for compute process to finish allocating data 
 
+	printf("Reached MPI post \n"); 
 	// Post window for access to array 
 	MPI_Win_post(group, 0, win);
 	MPI_Win_wait(win); // blocking barrier, ends access 
+	printf("MPI wait completed \n"); 
 
 	printData(array); // replace for writing to file  
 
@@ -234,6 +235,7 @@ int main(int argc, char** argv)
 	else 
 	{
 		// io process access that memory and prints out the data 
+		ioProcess(newComm, win_A, a); 
 		ioProcess(newComm, win_C, c); 
 		ioProcess(newComm, win_B, b); 
 		ioProcess(newComm, win_C, c); 
