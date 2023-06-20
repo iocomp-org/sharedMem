@@ -4,7 +4,6 @@
 #include "test.h"
 #define SCALAR 5 
 #define STARTING_VAL 1
-#define MAX_LOOP 5
 
 void printData(int* recv)
 {
@@ -61,84 +60,38 @@ void dataSendComplete(MPI_Win win)
  * function gets shared array pointer using mpi win shared query 
  * and prints out data as proxy for writing to file 
  */ 
-//void ioProcess(MPI_Comm newComm, MPI_Win win, int* array)
-//{
-//	long int arraySize; 
-//	int dispUnit; 
-//	int ierr; 
-//	ierr = MPI_Win_shared_query(win, 0, &arraySize, &dispUnit, &array); 
-//	error_check(ierr); 
-//	int i; 
-//
-//	// groups 
-//	MPI_Group comm_group, group;
-//	int ranks[2]; 
-//	for (i=0;i<2;i++) {
-//		ranks[i] = i;     //For forming groups, later
-//	}
-//	MPI_Comm_group(newComm,&comm_group);
-//
-//	// form groups 
-//	/* Compute group consists of rank 0*/
-//	MPI_Group_incl(comm_group,1,ranks,&group); 
-//	
-//	// grant access to window shared array  
-//	MPI_Win_post(group, 0, win);
-//	MPI_Win_wait(win); // blocking barrier, ends access 
-//	printf("MPI wait completed \n"); 
-//
-//	printData(&array); // replace for writing to file  
-//
-//	printf("MPI window unlocked after printing by ioServer \n"); 
-//} 
-
-void ioServer(MPI_Win* win_ptr, MPI_Comm newComm, int num)
+void ioProcess(MPI_Comm newComm, MPI_Win win, int* array)
 {
+	long int arraySize; 
+	int dispUnit; 
 	int ierr; 
-	int flag_mult = 1;  
-	int flag;
-	int* array[num]; // array of pointers?  
-
-	// access windows 
-	for(int i = 0 ; i < num; i++)
-	{
-		long int arraySize; 
-		int dispUnit; 
-		int ierr; 
-		ierr = MPI_Win_shared_query(win_ptr[num], 0, &arraySize, &dispUnit, &array[num]); 
-		error_check(ierr); 
-		int i; 
-
-		// groups 
-		MPI_Group comm_group, group;
-		int ranks[2]; 
-		for (i=0;i<2;i++) {
-			ranks[i] = i;     //For forming groups, later
-		}
-		MPI_Comm_group(newComm,&comm_group);
-
-		// form groups 
-		/* Compute group consists of rank 0*/
-		MPI_Group_incl(comm_group,1,ranks,&group); 
-		
-		// grant access to window shared array  
-		MPI_Win_post(group, 0, win_ptr[num]);
-	} 
+	ierr = MPI_Win_shared_query(win, 0, &arraySize, &dispUnit, &array); 
+	error_check(ierr); 
+	int i; 
 	
-	// infinite do while loop 
-	do{
-		for(int i = 0; i < num; i++)
-		{
-			ierr = MPI_Win_test(win_ptr[i], &flag); 
-			error_check(ierr);
-			if(flag)
-			{
-				printData(array[num]); // replace for writing to file  
-			}
-			flag_mult *= flag; 
-		}
-	}while(!flag_mult); // check if all flag values are positive and only then end the loop. 
+	// groups 
+	MPI_Group comm_group, group;
+	int ranks[2]; 
+	for (i=0;i<2;i++) {
+		ranks[i] = i;     //For forming groups, later
+	}
+	MPI_Comm_group(newComm,&comm_group);
+	
+	// form groups 
+	/* Compute group consists of rank 0*/
+	MPI_Group_incl(comm_group,1,ranks,&group); 
+	
+	// MPI_Barrier(newComm);  // wait for compute process to finish allocating data 
 
+	printf("Reached MPI post \n"); 
+	// Post window for access to array 
+	MPI_Win_post(group, 0, win);
+	MPI_Win_wait(win); // blocking barrier, ends access 
+	printf("MPI wait completed \n"); 
+
+	printData(array); // replace for writing to file  
+
+	printf("MPI window unlocked after printing by ioServer \n"); 
 } 
 
 int main(int argc, char** argv)
@@ -176,8 +129,7 @@ int main(int argc, char** argv)
 	// rank 0: init(a)
 
 	// LOOP
-	// rank 0: initialise a
-	// rank 1: print a 
+
 	// rank 1: finish writing c
 	// rank 0; c=a
 	// rank 1: start writing c
@@ -212,90 +164,82 @@ int main(int argc, char** argv)
 	win_A = outputWin.win; 
 	a = outputWin.array; 
 
-	// MPI window pointers
-	MPI_Win* win_ptr; 
-	win_ptr[0] = win_A; 
-	win_ptr[1] = win_B; 
-	win_ptr[2] = win_C; 
+	// MPI group stuff
+	// groups newComm communicator's rank 0 and 1 into a group  
 
-	
-	// STREAM compute kernels loop 
-	for(int loop = 0; loop < MAX_LOOP; loop ++)
+	if(newRank == 0)  
 	{
-		if(newRank == 0)  
+		// comp process initialises array and creates a window with that array 
+
+		MPI_Group comm_group, group;
+		int ranks[2]; 
+		for (int i=0;i<2;i++) {
+			ranks[i] = i;     //For forming groups, later
+		}
+		MPI_Comm_group(newComm,&comm_group);
+
+		/* I/O group consists of ranks 1*/
+		MPI_Group_incl(comm_group,1,ranks+1,&group); 
+	
+		// INITIALISE A
+		MPI_Win_start(group, 0, win_A); 
+		for(int i = 0; i < N; i++)
 		{
-			// comp process initialises array and creates a window with that array 
-			MPI_Group comm_group, group;
-			int ranks[2]; 
-			for (int i=0;i<2;i++) {
-				ranks[i] = i;     //For forming groups, later
-			}
-			MPI_Comm_group(newComm,&comm_group);
+			a[i] = STARTING_VAL;  
+		}
+		MPI_Win_complete(win_A); 
 
-			/* I/O group consists of ranks 1*/
-			MPI_Group_incl(comm_group,1,ranks+1,&group); 
-
-			// INITIALISE A
-			MPI_Win_start(group, 0, win_A); 
-			for(int i = 0; i < N; i++)
-			{
-				a[i] = STARTING_VAL;  
-			}
-			MPI_Win_complete(win_A); 
-
-			// COPY
-			MPI_Win_start(group, 0, win_C); 
-			printf("After mpi window lock for C \n"); 
-			for(int i = 0; i < N; i++)
-			{
-				c[i] = a[i]; 
-			}
-			MPI_Win_complete(win_C); 
-			printf("After mpi window unlock for C \n"); 
-			// MPI_Barrier(newComm); // start printing  
-
-			// SCALE
-			MPI_Win_start(group, 0, win_B); 
-			printf("After mpi window lock for B \n"); 
-			for(int i = 0; i < N; i++)
-			{
-				b[i] = SCALAR * c[i]; 
-			}
-			MPI_Win_complete(win_B); 
-			printf("After mpi window unlock for C \n"); 
-			// MPI_Barrier(newComm); // start printing  
-
-			// ADD 
-			MPI_Win_start(group, 0, win_C); 
-			printf("After mpi window lock for C \n"); 
-			for(int i = 0; i < N; i++)
-			{
-				c[i] = a[i] + b[i]; 
-			}
-			MPI_Win_complete(win_C); 
-			// MPI_Barrier(newComm); // start printing  
-
-			// TRIAD 
-			MPI_Win_start(group, 0, win_A); 
-			printf("After mpi window lock for C \n"); 
-			for(int i = 0; i < N; i++)
-			{
-				a[i] = b[i] + SCALAR*c[i]; 
-			}
-			MPI_Win_complete(win_A); 
-			// MPI_Barrier(newComm); // start printing  
-
-		} 
-		else 
+		// COPY
+		MPI_Win_start(group, 0, win_C); 
+		printf("After mpi window lock for C \n"); 
+		for(int i = 0; i < N; i++)
 		{
-			// io process access that memory and prints out the data 
-//			ioProcess(newComm, win_A, a); 
-//			ioProcess(newComm, win_C, c); 
-//			ioProcess(newComm, win_B, b); 
-//			ioProcess(newComm, win_C, c); 
-//			ioProcess(newComm, win_A, a); 
-				ioServer(win_ptr, newComm, 3); 
-		} 
+			c[i] = a[i]; 
+		}
+		MPI_Win_complete(win_C); 
+		printf("After mpi window unlock for C \n"); 
+		// MPI_Barrier(newComm); // start printing  
+
+		// SCALE
+		MPI_Win_start(group, 0, win_B); 
+		printf("After mpi window lock for B \n"); 
+		for(int i = 0; i < N; i++)
+		{
+			b[i] = SCALAR * c[i]; 
+		}
+		MPI_Win_complete(win_B); 
+		printf("After mpi window unlock for C \n"); 
+		// MPI_Barrier(newComm); // start printing  
+
+		// ADD 
+		MPI_Win_start(group, 0, win_C); 
+		printf("After mpi window lock for C \n"); 
+		for(int i = 0; i < N; i++)
+		{
+			c[i] = a[i] + b[i]; 
+		}
+		MPI_Win_complete(win_C); 
+		// MPI_Barrier(newComm); // start printing  
+
+		// TRIAD 
+		MPI_Win_start(group, 0, win_A); 
+		printf("After mpi window lock for C \n"); 
+		for(int i = 0; i < N; i++)
+		{
+			a[i] = b[i] + SCALAR*c[i]; 
+		}
+		MPI_Win_complete(win_A); 
+		// MPI_Barrier(newComm); // start printing  
+
+	} 
+	else 
+	{
+		// io process access that memory and prints out the data 
+		ioProcess(newComm, win_A, a); 
+		ioProcess(newComm, win_C, c); 
+		ioProcess(newComm, win_B, b); 
+		ioProcess(newComm, win_C, c); 
+		ioProcess(newComm, win_A, a); 
 	} 
 
 	// deallocate windows 
