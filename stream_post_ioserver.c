@@ -62,6 +62,7 @@ void dataSendComplete(MPI_Win win)
  */
 void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN])
 {
+	int flag[NUM_WIN]; 	
 	for(int i = 0; i < NUM_WIN; i++)
 	{
 		long int arraySize; 
@@ -88,10 +89,19 @@ void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN])
 		printf("ioServer Reached MPI post \n"); 
 		// Post window for access to array 
 		MPI_Win_post(group, 0, win_ptr[i]);
-		MPI_Win_wait(win_ptr[i]); // blocking barrier, ends access 
-		printf("ioServer MPI wait completed \n"); 
 
-		printData(array[i]); // replace for writing to file  
+		// Test for window completion 
+		for(;;)
+			{
+				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
+				error_check(ierr);
+				if(flag[i])
+				{
+					printf("flag positive \n"); 
+					printData(array[i]); // replace for writing to file  
+					break; 
+				}
+			} 
 
 		printf("MPI window unlocked after printing by ioServer \n"); 
 	} 
