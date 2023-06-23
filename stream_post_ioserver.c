@@ -32,11 +32,7 @@ struct winElements winAlloc(int len, MPI_Comm newComm)
 	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
 	error_check(ierr);
 	printf("comp server allocate window \n"); 
-	//else
-	//{
-	//	ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array, &win); 
-	//	error_check(ierr);
-	//}
+
 	output.win = win; 
 	output.array = array;  
 	return(output); 
@@ -70,21 +66,9 @@ void ioServer(MPI_Comm newComm)
 	{
 		ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array[i], &win_ptr[i]); 
 		error_check(ierr);
-		printf("ioServer MPI allocated windows \n"); 
+		printf("ioServer -> MPI allocated windows %i \n", i); 
 	} 
 
-	// groups 
-	MPI_Group comm_group, group;
-	int ranks[2]; 
-	for (int j=0; j<2; j++) {
-		ranks[j] = j;     //For forming groups, later
-	}
-	MPI_Comm_group(newComm,&comm_group);
-	// form groups 
-	/* Compute group consists of rank 0*/
-	MPI_Group_incl(comm_group,1,ranks,&group); 
-
-	// shared query get windows 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
 		long int arraySize; 
@@ -92,25 +76,64 @@ void ioServer(MPI_Comm newComm)
 		int ierr; 
 		ierr = MPI_Win_shared_query(win_ptr[i], 0, &arraySize, &dispUnit, &array[i]); 
 		error_check(ierr); 
-		printf("ioServer MPI shared query \n"); 
-
-		printf("ioServer Reached MPI post \n"); 
-		//	Post window for access to array 
-		MPI_Win_post(group, 0, win_ptr[i]);
-
-		// Test for window completion 
-		for(;;)
-		{
-			ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
-			error_check(ierr);
-			if(flag[i])
-			{
-				printf("flag positive \n"); 
-				printData(array[i]); // replace for writing to file  
-				break; 
-			}
-		} 
+		printf("ioServer -> MPI shared query %i \n", i); 
 	} 
+	
+	// groups 
+	MPI_Group comm_group, group;
+	int ranks[2]; 
+	for (int j=0; j<2; j++) {
+		ranks[j] = j;   
+	}
+	MPI_Comm_group(newComm,&comm_group);
+
+	/* Compute group consists of rank 0*/
+	MPI_Group_incl(comm_group,1,ranks,&group); 
+	
+	// assign wintestflags int to test for messages from the compute server  
+	int wintestflags[NUM_WIN]; 
+	// declare mult variable to test for completition among all windows 
+	int wintestmult = 1; 
+	// Test for window completion 
+	do 
+	{
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("ioServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+
+		// iterate across all windows 
+		for(int i = 0; i < NUM_WIN; i++)
+		{
+			if(wintestflags[i]==1)
+			{
+				printf("ioServer -> Reached MPI post for window iteration %i flag multiple %i\n", i, wintestmult); 
+				//	Post window for access to array 
+				MPI_Win_post(group, 0, win_ptr[i]);
+
+				// wait for window completion 
+				ierr = MPI_Win_wait(win_ptr[i]); 
+				printData(array[i]); // replace for writing to file  
+
+				// test for window completion 	
+//				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
+//				error_check(ierr);
+//				if(flag[i])
+//				{
+//					printf("ioServer -> flag positive \n"); 
+//					printData(array[i]); // replace for writing to file  
+//					break; 
+//				}
+				// flag switched off meaning no more writing 
+			} 
+		}
+		wintestmult = 1;  // reset value 
+		for(int j = 0; j < NUM_WIN; j++)
+		{
+			wintestmult *= wintestflags[j]; 
+			printf("ioServer -> wintestmult value %i \n", wintestmult); 
+		} 
+	}while(!wintestmult);  // test for completion of all windows 
+	
+	printf("ioServer -> loop server exited \n"); 
 
 	// free windows and pointer 
 	for(int i = 0; i < NUM_WIN; i++)
@@ -175,6 +198,16 @@ int main(int argc, char** argv)
 	// initialise windows for each array in both Compute and I/O process
 	if(newRank == 0)
 	{
+		
+		// initialise window test flags with 0 
+		// assign them 1 if ready for writing 
+		int wintestflags[NUM_WIN]; 	
+		for(int j = 0; j < NUM_WIN; j++)
+		{
+			wintestflags[j] = 0; 
+		} 
+	
+		// Allocate windows in order 
 		MPI_Win win_A, win_B, win_C;
 		int* a; 
 		int* b; 
@@ -195,7 +228,6 @@ int main(int argc, char** argv)
 		win_B = outputWin.win; 
 		b = outputWin.array; 
 
-
 		// groups newComm communicator's rank 0 and 1 into a group  
 		// comp process initialises array and creates a window with that array 
 		MPI_Group comm_group, group;
@@ -207,55 +239,94 @@ int main(int argc, char** argv)
 
 		/* I/O group consists of ranks 1*/
 		MPI_Group_incl(comm_group,1,ranks+1,&group); 
-		printf("compServer MPI group include \n"); 
 
 		// INITIALISE A
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 1;  
+		wintestflags[1] = 0; 
+		wintestflags[2] = 0; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("coompServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 		MPI_Win_start(group, 0, win_A); 
-		printf("compServer MPI window start \n"); 
+		printf("compServer -> MPI window start \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			a[i] = STARTING_VAL;  
 		}
-		MPI_Win_complete(win_A); 
-		printf("After mpi window unlock for A \n"); 
-		//
+		MPI_Win_complete(win_A);
+		printf("compServer -> After mpi window unlock for A \n"); 
+		
+		/* Start STREAM loop */ 
 		// COPY
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 0;  
+		wintestflags[1] = 1; 
+		wintestflags[2] = 0; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("coompServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 		MPI_Win_start(group, 0, win_C); 
 		for(int i = 0; i < N; i++)
 		{
 			c[i] = a[i]; 
 		}
 		MPI_Win_complete(win_C); 
-		printf("After mpi window unlock for C \n"); 
+		printf("compServer -> After mpi window unlock for C \n"); 
 
 		// SCALE
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 0;  
+		wintestflags[1] = 0; 
+		wintestflags[2] = 1; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 		MPI_Win_start(group, 0, win_B); 
 		for(int i = 0; i < N; i++)
 		{
 			b[i] = SCALAR * c[i]; 
 		}
 		MPI_Win_complete(win_B); 
-		printf("After mpi window unlock for B \n"); 
+		printf("compServer -> After mpi window unlock for B \n"); 
 
-		//
-		//		// ADD 
-		//		MPI_Win_start(group, 0, win_C); 
-		//		printf("After mpi window lock for C \n"); 
-		//		for(int i = 0; i < N; i++)
-		//		{
-		//			c[i] = a[i] + b[i]; 
-		//		}
-		//		MPI_Win_complete(win_C); 
-		//		// MPI_Barrier(newComm); // start printing  
-		//
-		//		// TRIAD 
-		//		MPI_Win_start(group, 0, win_A); 
-		//		printf("After mpi window lock for C \n"); 
-		//		for(int i = 0; i < N; i++)
-		//		{
-		//			a[i] = b[i] + SCALAR*c[i]; 
-		//		}
-		//		MPI_Win_complete(win_A); 
+		// ADD 
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 0;  
+		wintestflags[1] = 1; 
+		wintestflags[2] = 0; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		MPI_Win_start(group, 0, win_C); 
+		for(int i = 0; i < N; i++)
+		{
+			c[i] = a[i] + b[i]; 
+		}
+		MPI_Win_complete(win_C); 
+		printf("compServer -> After mpi complete for C \n"); 
+		
+		
+		// TRIAD 
+		// send message to ioServer to complete A
+		// then update A
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 1;  
+		wintestflags[1] = 0; 
+		wintestflags[2] = 0; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+
+		MPI_Win_start(group, 0, win_A); 
+		for(int i = 0; i < N; i++)
+		{
+			a[i] = b[i] + SCALAR*c[i]; 
+		}
+		MPI_Win_complete(win_A); 
+		printf("compServer -> After mpi complete for A \n"); 
+
+		// send message to ioServer to exit the loop 
+		wintestflags[0] = -1;  
+		wintestflags[1] = -1; 
+		wintestflags[2] = -1; 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 
 		dataSendComplete(win_A); 
 		dataSendComplete(win_C); 

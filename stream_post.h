@@ -14,7 +14,6 @@ void printData(int* recv);
 // void dataSend(int len, MPI_Comm newComm, int* values); 
 MPI_Win dataSend(int len, MPI_Comm newComm, int* values); 
 void dataSendComplete(MPI_Win win); 
-void ioProcess(MPI_Comm newComm); 
+void ioProcess(MPI_Comm newComm, MPI_Win win, int* array); 
 MPI_Win createWindow(int len, MPI_Comm newComm, int* array); 
 struct winElements winAlloc(int len, MPI_Comm newComm);  
-void ioServer( MPI_Comm newComm, MPI_Group group, int num); 

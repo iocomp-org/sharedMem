@@ -18,4 +18,5 @@ void dataSendComplete(MPI_Win win);
 void ioProcess(MPI_Comm newComm); 
 MPI_Win createWindow(int len, MPI_Comm newComm, int* array); 
 struct winElements winAlloc(int len, MPI_Comm newComm);  
-void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN]); 
+// void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN]); 
+void ioServer(MPI_Comm newComm); 

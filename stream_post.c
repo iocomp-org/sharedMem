@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <mpi.h>
 #include <stdlib.h>  
-#include "test.h"
+#include "stream_post.h"
 #define SCALAR 5 
 #define STARTING_VAL 1
 
@@ -165,6 +165,10 @@ int main(int argc, char** argv)
 	a = outputWin.array; 
 
 	// MPI group stuff
+	MPI_Win win_ptr[3]; 
+	win_ptr[0] = win_A; 
+	win_ptr[1] = win_B; 
+	win_ptr[2] = win_C; 
 	// groups newComm communicator's rank 0 and 1 into a group  
 
 	if(newRank == 0)  
@@ -235,11 +239,18 @@ int main(int argc, char** argv)
 	else 
 	{
 		// io process access that memory and prints out the data 
-		ioProcess(newComm, win_A, a); 
-		ioProcess(newComm, win_C, c); 
-		ioProcess(newComm, win_B, b); 
-		ioProcess(newComm, win_C, c); 
-		ioProcess(newComm, win_A, a); 
+//		ioProcess(newComm, win_A, a); 
+//		ioProcess(newComm, win_C, c); 
+//		ioProcess(newComm, win_B, b); 
+//		ioProcess(newComm, win_C, c); 
+//		ioProcess(newComm, win_A, a); 
+
+		// pointer windows 
+		ioProcess(newComm, win_ptr[0], a); 
+		ioProcess(newComm, win_ptr[2], c); 
+		ioProcess(newComm, win_ptr[1], b); 
+		ioProcess(newComm, win_ptr[2], c); 
+		ioProcess(newComm, win_ptr[0], a); 
 	} 
 
 	// deallocate windows 
