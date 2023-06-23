@@ -110,26 +110,28 @@ void ioServer(MPI_Comm newComm)
 				MPI_Win_post(group, 0, win_ptr[i]);
 
 				// wait for window completion 
-				ierr = MPI_Win_wait(win_ptr[i]); 
-				printData(array[i]); // replace for writing to file  
+				//ierr = MPI_Win_wait(win_ptr[i]); 
+				//printData(array[i]); // replace for writing to file  
 
 				// test for window completion 	
-//				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
-//				error_check(ierr);
-//				if(flag[i])
-//				{
-//					printf("ioServer -> flag positive \n"); 
-//					printData(array[i]); // replace for writing to file  
-//					break; 
-//				}
-				// flag switched off meaning no more writing 
+				for(;;)
+				{
+					ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
+					printf("ioServer -> win test\n"); 
+					error_check(ierr);
+					if(flag[i])
+					{
+						printf("ioServer -> flag positive \n"); 
+						printData(array[i]); // replace for writing to file  
+						break; 
+					}
+				} 
 			} 
 		}
 		wintestmult = 1;  // reset value 
 		for(int j = 0; j < NUM_WIN; j++)
 		{
 			wintestmult *= wintestflags[j]; 
-			printf("ioServer -> wintestmult value %i \n", wintestmult); 
 		} 
 	}while(!wintestmult);  // test for completion of all windows 
 	
