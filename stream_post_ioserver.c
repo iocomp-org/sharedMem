@@ -94,6 +94,7 @@ void ioServer(MPI_Comm newComm)
 	int wintestflags[NUM_WIN]; 
 	// declare mult variable to test for completition among all windows 
 	int wintestmult = 1; 
+
 	// Test for window completion 
 	do 
 	{
@@ -103,36 +104,47 @@ void ioServer(MPI_Comm newComm)
 		// iterate across all windows 
 		for(int i = 0; i < NUM_WIN; i++)
 		{
-			if(wintestflags[i]==1)
+			if(wintestflags[i]>0) // 1 means go for printing 
 			{
+				// 2 means implement win wait, no need to implement win post again
+				if(wintestflags[i]==2) 
+				{
+					printf("ioServer -> flag negtiave and win wait implemented\n"); 
+					// wait for window completion 
+					ierr = MPI_Win_wait(win_ptr[i]); 
+					printData(array[i]); // replace for writing to file  
+				}
+				// open mpi post and test for the next iteration 
 				printf("ioServer -> Reached MPI post for window iteration %i flag multiple %i\n", i, wintestmult); 
 				//	Post window for access to array 
 				MPI_Win_post(group, 0, win_ptr[i]);
+				printf("ioServer -> post MPI post for window %i \n", i); 
 
 				// wait for window completion 
 				//ierr = MPI_Win_wait(win_ptr[i]); 
 				//printData(array[i]); // replace for writing to file  
 
 				// test for window completion 	
-				for(;;)
+				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
+				printf("ioServer -> win test\n"); 
+				error_check(ierr);
+				if(flag[i])
 				{
-					ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
-					printf("ioServer -> win test\n"); 
-					error_check(ierr);
-					if(flag[i])
-					{
-						printf("ioServer -> flag positive \n"); 
-						printData(array[i]); // replace for writing to file  
-						break; 
-					}
-				} 
+					printf("ioServer -> flag positive \n"); 
+					printData(array[i]); // replace for writing to file  
+					// break; 
+				}
+
 			} 
 		}
+		
+		// check if no more messages left 
 		wintestmult = 1;  // reset value 
 		for(int j = 0; j < NUM_WIN; j++)
 		{
 			wintestmult *= wintestflags[j]; 
 		} 
+		printf("ioServer -> wintestmult value %i\n", wintestmult); 
 	}while(!wintestmult);  // test for completion of all windows 
 	
 	printf("ioServer -> loop server exited \n"); 
@@ -140,6 +152,9 @@ void ioServer(MPI_Comm newComm)
 	// free windows and pointer 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
+		// wait for completion of all windows 
+		ierr = MPI_Win_wait(win_ptr[i]); 
+		printData(array[i]); // replace for writing to file  
 		printf("MPI win free IO server reached\n"); 
 		ierr = MPI_Win_free(&win_ptr[i]);
 		error_check(ierr); 
@@ -265,7 +280,7 @@ int main(int argc, char** argv)
 		wintestflags[1] = 1; 
 		wintestflags[2] = 0; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-		printf("coompServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 		MPI_Win_start(group, 0, win_C); 
 		for(int i = 0; i < N; i++)
 		{
@@ -292,11 +307,13 @@ int main(int argc, char** argv)
 		// ADD 
 		// send message to ioServer to print via broadcast
 		wintestflags[0] = 0;  
-		wintestflags[1] = 1; 
+		wintestflags[1] = 2; 
 		wintestflags[2] = 0; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+
 		MPI_Win_start(group, 0, win_C); 
+		printf("compServer -> After win start for C \n"); 
 		for(int i = 0; i < N; i++)
 		{
 			c[i] = a[i] + b[i]; 
@@ -309,7 +326,7 @@ int main(int argc, char** argv)
 		// send message to ioServer to complete A
 		// then update A
 		// send message to ioServer to print via broadcast
-		wintestflags[0] = 1;  
+		wintestflags[0] = 2;  
 		wintestflags[1] = 0; 
 		wintestflags[2] = 0; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
