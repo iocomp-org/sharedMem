@@ -1,16 +1,16 @@
 CC=mpicc.mpich 
-# CFLAGS=-I$(IDIR)
+CFLAGS=-DNDEBUG 
 
 ODIR=obj
 # LDIR =../lib
 
 LIBS=-lm
 
-DEPS=test.h 
+DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = multiArray.c 
+SRCS = stream_post_ioserver.c
 
 OBJS = $(SRCS:.c=.o)
 
