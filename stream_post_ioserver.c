@@ -134,17 +134,14 @@ void ioServer(MPI_Comm newComm)
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 				}
 
-				// open mpi post and test for the next iteration 
-#ifndef NDEBUG 
-				printf("ioServer -> Reached MPI post for window iteration %i flag multiple %i\n", i, wintestmult); 
-#endif 
 				//	Post window for access to array 
+				//	and start timer for that window  
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
 				printf("ioServer -> post MPI post for window %i \n", i); 
 #endif 
-				timers_start[i] = MPI_Wtime(); // start writing timer  
+				timers_start[i] = MPI_Wtime();
 
 				// test for window completion 	
 				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
@@ -152,7 +149,7 @@ void ioServer(MPI_Comm newComm)
 #ifndef NDEBUG 
 				printf("ioServer -> win test\n"); 
 #endif 
-				// if window is available 
+				// if window is available to print then print and end timer 
 				if(flag[i])
 				{
 #ifndef NDEBUG 
@@ -161,7 +158,6 @@ void ioServer(MPI_Comm newComm)
 					printData(array[i]); // replace for writing to file  
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
-					
 				}
 			} 
 		}
@@ -187,7 +183,10 @@ void ioServer(MPI_Comm newComm)
 	{
 		// wait for completion of all windows 
 		ierr = MPI_Win_wait(win_ptr[i]); 
+		error_check(ierr); 
 		printData(array[i]); // replace for writing to file  
+		timers_end[i] = MPI_Wtime(); // finish writing timer  
+		printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 #ifndef NDEBUG 
 		printf("MPI win free IO server reached\n"); 
 #endif 
