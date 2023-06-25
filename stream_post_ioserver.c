@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <mpi.h>
 #include <stdlib.h>  
+#include <string.h> 
 #include "stream_post_ioserver.h"
+
 #define SCALAR 5 
 #define STARTING_VAL 1
 
@@ -54,6 +56,19 @@ void dataSendComplete(MPI_Win win)
 	error_check(ierr); 
 } 
 
+void ioServerWrite(char* WRITEFILE, int* array, int elementsNum)
+{
+	
+	FILE* fp = fopen(WRITEFILE, "a"); // append to WRITEFILE 
+	if(fp == NULL)
+	{
+		printf("Error!");   
+		exit(1);             
+	}
+	fwrite(array, sizeof(int), elementsNum, fp);  
+	fclose(fp); 
+} 
+
 /*
  * function gets shared array pointer using mpi win shared query 
  * and prints out data as proxy for writing to file 
@@ -66,9 +81,13 @@ void ioServer(MPI_Comm newComm)
 	int flag[NUM_WIN]; 	
 	int ierr; 
 	int soi = sizeof(int); 
+
 	// timer variables 
 	float timers_start[NUM_WIN];
 	float timers_end[NUM_WIN];
+
+	// declare array of write files 
+	char WRITEFILE[NUM_WIN][10]; 
 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
@@ -77,6 +96,16 @@ void ioServer(MPI_Comm newComm)
 #ifndef NDEBUG 
 		printf("ioServer -> MPI allocated windows %i \n", i); 
 #endif 
+		// each window can write to its own file, initialise write file name for
+		// each window number 
+		int arrayNumInt = '0' + i; 
+		char arrayNumChar = (char) arrayNumInt; 
+		char arrayNumString[] = {arrayNumChar, '\0'}; 
+		printf("arraynumstring string is %s \n", arrayNumString); 
+		strcpy(WRITEFILE[i], arrayNumString); 
+		char EXT[] = ".out"; 
+		strcat(WRITEFILE[i], EXT); 
+		printf("Writefile for window number %i is %s \n", i,  WRITEFILE[i]); 
 	} 
 
 	for(int i = 0; i < NUM_WIN; i++)
@@ -129,7 +158,7 @@ void ioServer(MPI_Comm newComm)
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
 					error_check(ierr); 
-					printData(array[i]); // replace for writing to file 
+					ioServerWrite(WRITEFILE[i], array[i],N);
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 				}
@@ -155,7 +184,7 @@ void ioServer(MPI_Comm newComm)
 #ifndef NDEBUG 
 					printf("ioServer -> flag positive \n"); 
 #endif 
-					printData(array[i]); // replace for writing to file  
+					ioServerWrite(WRITEFILE[i], array[i],N);
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 				}
@@ -184,7 +213,7 @@ void ioServer(MPI_Comm newComm)
 		// wait for completion of all windows 
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
-		printData(array[i]); // replace for writing to file  
+		ioServerWrite(WRITEFILE[i], array[i],N);
 		timers_end[i] = MPI_Wtime(); // finish writing timer  
 		printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 #ifndef NDEBUG 
