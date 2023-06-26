@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <stdlib.h>  
 #include <string.h> 
+#include <assert.h> 
 #include "stream_post_ioserver.h"
 
 #define SCALAR 5 
@@ -58,15 +59,24 @@ void dataSendComplete(MPI_Win win)
 
 void ioServerWrite(char* WRITEFILE, int* array, int elementsNum)
 {
-	
-	FILE* fp = fopen(WRITEFILE, "a"); // append to WRITEFILE 
+	FILE* fp = fopen(WRITEFILE, "a+"); // append to WRITEFILE 
 	if(fp == NULL)
 	{
 		printf("Error!");   
 		exit(1);             
 	}
-	fwrite(array, sizeof(int), elementsNum, fp);  
-	fclose(fp); 
+	else
+	{
+		int check; 
+		for(int i = 0; i < N; i ++)
+		{
+			fprintf(fp, "%i,", array[i]); 
+		} 
+
+		// check = fwrite(array, 1, elementsNum*sizeof(int), fp);  
+		// assert(check == N); 
+		fclose(fp); 
+	} 
 } 
 
 /*
@@ -101,11 +111,12 @@ void ioServer(MPI_Comm newComm)
 		int arrayNumInt = '0' + i; 
 		char arrayNumChar = (char) arrayNumInt; 
 		char arrayNumString[] = {arrayNumChar, '\0'}; 
-		printf("arraynumstring string is %s \n", arrayNumString); 
 		strcpy(WRITEFILE[i], arrayNumString); 
 		char EXT[] = ".out"; 
 		strcat(WRITEFILE[i], EXT); 
-		printf("Writefile for window number %i is %s \n", i,  WRITEFILE[i]); 
+
+		// delete the previous files 
+		int test = remove(WRITEFILE[i]);
 	} 
 
 	for(int i = 0; i < NUM_WIN; i++)
