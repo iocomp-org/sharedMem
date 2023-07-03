@@ -7,6 +7,7 @@
 
 #define SCALAR 5 
 #define STARTING_VAL 1
+#define NDIM 1
 
 void printData(int* recv)
 {
@@ -99,12 +100,34 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// declare array of write files 
 	char WRITEFILE[NUM_WIN][10]; 
 
-	// io communicator 
-	int ioRank; 
-	MPI_Comm_rank(ioComm, &ioRank); 
-	printf("my IO rank is %i \n", ioRank); 
-		
+	// IO setup create cartesian communicators 	
+	int ioRank, ioSize,  
+		reorder = 0, 
+		dims_mpi[NDIM] = { 0 },
+    coords[NDIM] = { 0 },
+    periods[NDIM] = { 0 };  
 
+	MPI_Comm_rank(ioComm, &ioRank); 
+	MPI_Comm_size(ioComm, &ioSize); 
+
+	MPI_Dims_create(ioSize, NDIM, dims_mpi);
+	MPI_Comm cartcomm; 
+  MPI_Cart_create(ioComm, NDIM, dims_mpi, periods, reorder, &cartcomm); //comm
+  MPI_Cart_coords(cartcomm, ioRank, NDIM, coords);
+
+	// assign arrray size, subsize and global size 
+	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
+	for(int i = 0; i < NDIM; i++)
+	{
+		arraysubsize[i] = N; 
+		arraygsize[i] = N;
+		arraystart[i] = 0; 
+	}
+	// last element of array start and size different 
+	arraystart[0] = N*ioRank;
+	arraygsize[0] = N*ioSize; 
+	
+	// allocate shared windows 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
 		ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array[i], &win_ptr[i]); 
@@ -118,13 +141,14 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		char arrayNumChar = (char) arrayNumInt; 
 		char arrayNumString[] = {arrayNumChar, '\0'}; 
 		strcpy(WRITEFILE[i], arrayNumString); 
-		char EXT[] = ".out"; 
+		char EXT[] = ".dat"; 
 		strcat(WRITEFILE[i], EXT); 
 
 		// delete the previous files 
 		int test = remove(WRITEFILE[i]);
 	} 
-
+	
+	// allocate arrays using window pointers 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
 		long int arraySize; 
@@ -175,7 +199,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
 					error_check(ierr); 
-					ioServerWrite(WRITEFILE[i], array[i],N);
+					mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 				}
@@ -201,7 +225,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 #ifndef NDEBUG 
 					printf("ioServer -> flag positive \n"); 
 #endif 
-					ioServerWrite(WRITEFILE[i], array[i],N);
+					mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 					printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 				}
@@ -230,7 +254,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		// wait for completion of all windows 
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
-		ioServerWrite(WRITEFILE[i], array[i],N);
+		mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
 		timers_end[i] = MPI_Wtime(); // finish writing timer  
 		printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
 #ifndef NDEBUG 
@@ -439,7 +463,6 @@ int main(int argc, char** argv)
 #ifndef NDEBUG 
 		printf("compServer -> After mpi complete for C \n"); 
 #endif 
-
 
 		// TRIAD 
 		// send message to ioServer to complete A

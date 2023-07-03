@@ -21,3 +21,4 @@ struct winElements winAlloc(int len, MPI_Comm newComm);
 // void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN]); 
 void ioServer(MPI_Comm ioComm, MPI_Comm newComm); 
 void ioServerWrite(char* WRITEFILE, int* array, int elementsNum); 
+void mpiiowrite(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int NDIM, MPI_Comm cartcomm, char* FILENAME); 
