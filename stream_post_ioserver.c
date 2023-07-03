@@ -83,7 +83,7 @@ void ioServerWrite(char* WRITEFILE, int* array, int elementsNum)
  * function gets shared array pointer using mpi win shared query 
  * and prints out data as proxy for writing to file 
  */
-void ioServer(MPI_Comm newComm)
+void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 {
 	// allocate windows 
 	int* array[NUM_WIN]; 
@@ -98,6 +98,12 @@ void ioServer(MPI_Comm newComm)
 
 	// declare array of write files 
 	char WRITEFILE[NUM_WIN][10]; 
+
+	// io communicator 
+	int ioRank; 
+	MPI_Comm_rank(ioComm, &ioRank); 
+	printf("my IO rank is %i \n", ioRank); 
+		
 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
@@ -273,6 +279,21 @@ int main(int argc, char** argv)
 	// start timer 
 	double start, stop, diff; 
 	start = MPI_Wtime();
+
+	// divide MPI comm world into compute or I/O server 
+	int colour_io; 
+	MPI_Comm computeComm, ioComm; 
+	if(newRank == 0)
+	{
+		colour = 0; 
+		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &computeComm );
+	}
+	else
+	{
+		colour = 1; 
+		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &ioComm );
+	}
+	
 	// rank 0: init(a)
 
 	// LOOP
@@ -458,7 +479,7 @@ int main(int argc, char** argv)
 	} 
 	else 
 	{
-		ioServer(newComm); 
+		ioServer(ioComm, newComm); 
 	} 
 
 
