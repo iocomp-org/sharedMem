@@ -92,7 +92,8 @@ void mpiiowrite(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart,
 #ifndef NDEBUG   
 	printf("MPI filetype\n"); 
 #endif       
-
+	
+	// read file and print out values 
 	mpiRead(FILENAME,cartcomm); 
 }
 

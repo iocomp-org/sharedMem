@@ -12,6 +12,8 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 	MPI_Comm_rank(ioServerComm, &ioRank); 
 	MPI_Comm_size(ioServerComm, &ioSize); 
 	
+	int globalSize;
+	globalSize = N * ioSize; 
 	if (fp==NULL)
 	{
 		printf("Error: file %s not opening. Exiting \n", FILENAME); 
@@ -19,10 +21,10 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 	}
 	
 	int* iodata_test; 
-	iodata_test = (int *) malloc(sizeof(int)*N); 
-	num = fread(iodata_test, sizeof(int), N*ioSize, fp);
+	iodata_test = (int *) malloc(sizeof(int)*globalSize); 
+	num = fread(iodata_test, sizeof(int), globalSize, fp);
 	
-	if(num!=N)
+	if(num!=globalSize)
 	{
 		printf("read elements %li not equal to global size of file %i \n", num, N); 
 	}
