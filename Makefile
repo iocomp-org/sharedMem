@@ -10,7 +10,7 @@ DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = stream_post_ioserver.c
+SRCS = stream_post_ioserver.c mpi_write.c 
 
 OBJS = $(SRCS:.c=.o)
 

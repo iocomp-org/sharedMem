@@ -498,13 +498,11 @@ int main(int argc, char** argv)
 		dataSendComplete(win_A); 
 		dataSendComplete(win_C); 
 		dataSendComplete(win_B); 
-
 	} 
 	else 
 	{
 		ioServer(ioComm, newComm); 
 	} 
-
 
 	stop = MPI_Wtime();
 	diff = stop - start;
