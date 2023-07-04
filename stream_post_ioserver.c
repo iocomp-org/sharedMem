@@ -102,18 +102,22 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize,  
-		reorder = 0, 
-		dims_mpi[NDIM] = { 0 },
-    coords[NDIM] = { 0 },
-    periods[NDIM] = { 0 };  
+			reorder = 0, 
+			dims_mpi[NDIM] = { 0 },
+			coords[NDIM] = { 0 },
+			periods[NDIM] = { 0 };  
 
 	MPI_Comm_rank(ioComm, &ioRank); 
 	MPI_Comm_size(ioComm, &ioSize); 
 
-	MPI_Dims_create(ioSize, NDIM, dims_mpi);
+	// Cartesian communicator setup 
 	MPI_Comm cartcomm; 
-  MPI_Cart_create(ioComm, NDIM, dims_mpi, periods, reorder, &cartcomm); //comm
-  MPI_Cart_coords(cartcomm, ioRank, NDIM, coords);
+	ierr = MPI_Dims_create(ioSize, NDIM, dims_mpi);
+	error_check(ierr);
+	ierr = MPI_Cart_create(ioComm, NDIM, dims_mpi, periods, reorder, &cartcomm); //comm
+	error_check(ierr);
+	ierr = MPI_Cart_coords(cartcomm, ioRank, NDIM, coords);
+	error_check(ierr);
 
 	// assign arrray size, subsize and global size 
 	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
@@ -126,7 +130,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// last element of array start and size different 
 	arraystart[0] = N*ioRank;
 	arraygsize[0] = N*ioSize; 
-	
+
 	// allocate shared windows 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
@@ -147,7 +151,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		// delete the previous files 
 		int test = remove(WRITEFILE[i]);
 	} 
-	
+
 	// allocate arrays using window pointers 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
@@ -317,7 +321,7 @@ int main(int argc, char** argv)
 		colour = 1; 
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &ioComm );
 	}
-	
+
 	// rank 0: init(a)
 
 	// LOOP
