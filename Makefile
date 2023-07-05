@@ -1,26 +1,33 @@
 CC=mpicc.mpich 
-CFLAGS=-DNDEBUG 
+CFLAGS=-DNDEBUG -fPIC -g -Og
 
-ODIR=obj
-# LDIR =../lib
+ODIR = Object_files
 
-LIBS=-lm
+LFLAGS = -I$(HDF5_DIR)/include
+
+LIBS = -L$(HDF5_DIR)/lib -lhdf5_hl -lhdf5 -lm 
 
 DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = stream_post_ioserver.c mpi_write.c 
+SRCS = stream_post_ioserver.c mpiWrite.c mpiRead.c hdf5Write.c 
 
-OBJS = $(SRCS:.c=.o)
+_OBJS = $(SRCS:.c=.o)
+OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
 $(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) ${LFLAGS} -c $< -o $@
 
-$(MAIN): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+$(MAIN): $(OBJS) 
+	$(CC) $(CFLAGS) ${LFLAGS} -o $(MAIN) $(OBJS) $(LIBS)
 
 .PHONY: clean
 
 clean:
-	rm -f *.o sharedmem 
+	rm -f $(ODIR)/*.o *.o *~ $(MAIN)
+
+depend: $(SRCS)
+	makedepend $(CFLAGS) $^
+
+# DO NOT DELETE THIS LINE -- make depend needs it
