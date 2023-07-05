@@ -58,27 +58,6 @@ void dataSendComplete(MPI_Win win)
 	error_check(ierr); 
 } 
 
-void ioServerWrite(char* WRITEFILE, int* array, int elementsNum)
-{
-	FILE* fp = fopen(WRITEFILE, "a+"); // append to WRITEFILE 
-	if(fp == NULL)
-	{
-		printf("Error!");   
-		exit(1);             
-	}
-	else
-	{
-		int check; 
-		for(int i = 0; i < N; i ++)
-		{
-			fprintf(fp, "%i,", array[i]); 
-		} 
-
-		// check = fwrite(array, 1, elementsNum*sizeof(int), fp);  
-		// assert(check == N); 
-		fclose(fp); 
-	} 
-} 
 
 /*
  * function gets shared array pointer using mpi win shared query 
@@ -263,7 +242,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		printf("MPI win free IO server reached\n"); 
 #endif 
 		
-		MPI_Barrier(MPI_COMM_WORLD); 	
+		// MPI_Barrier(MPI_COMM_WORLD); 	
 		ierr = MPI_Win_free(&win_ptr[i]);
 		error_check(ierr); 
 		timers_end[i] = MPI_Wtime(); // finish writing timer  
@@ -365,10 +344,10 @@ int main(int argc, char** argv)
 		win_A = outputWin.win; 
 		a = outputWin.array; 
 
-//		// c array 
-//		outputWin = winAlloc(N, newComm); 
-//		win_C = outputWin.win; 
-//		c = outputWin.array; 
+		// c array 
+		outputWin = winAlloc(N, newComm); 
+		win_C = outputWin.win; 
+		c = outputWin.array; 
 //
 //		// b array 
 //		outputWin = winAlloc(N, newComm); 
@@ -390,7 +369,7 @@ int main(int argc, char** argv)
 		// INITIALISE A
 		// send message to ioServer to print via broadcast
 		wintestflags[0] = 1;  
-		//wintestflags[1] = 0; 
+		wintestflags[1] = 0; 
 		//wintestflags[2] = 0; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
@@ -408,25 +387,25 @@ int main(int argc, char** argv)
 		printf("compServer -> After mpi window unlock for A \n"); 
 #endif 
 
-//		/* Start STREAM loop */ 
-//		// COPY
-//		// send message to ioServer to print via broadcast
-//		wintestflags[0] = 0;  
-//		wintestflags[1] = 1; 
+		/* Start STREAM loop */ 
+		// COPY
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 0;  
+		wintestflags[1] = 1; 
 //		wintestflags[2] = 0; 
-//		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-//#ifndef NDEBUG 
-//		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-//#endif 
-//		MPI_Win_start(group, 0, win_C); 
-//		for(int i = 0; i < N; i++)
-//		{
-//			c[i] = a[i]; 
-//		}
-//		MPI_Win_complete(win_C); 
-//#ifndef NDEBUG 
-//		printf("compServer -> After mpi window unlock for C \n"); 
-//#endif 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+#ifndef NDEBUG 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+#endif 
+		MPI_Win_start(group, 0, win_C); 
+		for(int i = 0; i < N; i++)
+		{
+			c[i] = a[i]; 
+		}
+		MPI_Win_complete(win_C); 
+#ifndef NDEBUG 
+		printf("compServer -> After mpi window unlock for C \n"); 
+#endif 
 //
 //		// SCALE
 //		// send message to ioServer to print via broadcast
@@ -447,28 +426,28 @@ int main(int argc, char** argv)
 //		printf("compServer -> After mpi window unlock for B \n"); 
 //#endif 
 //
-//		// ADD 
-//		// send message to ioServer to print via broadcast
-//		wintestflags[0] = 0;  
-//		wintestflags[1] = 2; 
+		// ADD 
+		// send message to ioServer to print via broadcast
+		wintestflags[0] = 0;  
+		wintestflags[1] = 2; 
 //		wintestflags[2] = 0; 
-//		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-//#ifndef NDEBUG 
-//		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-//#endif 
-//
-//		MPI_Win_start(group, 0, win_C); 
-//#ifndef NDEBUG 
-//		printf("compServer -> After win start for C \n"); 
-//#endif 
-//		for(int i = 0; i < N; i++)
-//		{
-//			c[i] = a[i] + b[i]; 
-//		}
-//		MPI_Win_complete(win_C); 
-//#ifndef NDEBUG 
-//		printf("compServer -> After mpi complete for C \n"); 
-//#endif 
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+#ifndef NDEBUG 
+		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+#endif 
+
+		MPI_Win_start(group, 0, win_C); 
+#ifndef NDEBUG 
+		printf("compServer -> After win start for C \n"); 
+#endif 
+		for(int i = 0; i < N; i++)
+		{
+			c[i] = a[i] + b[i]; 
+		}
+		MPI_Win_complete(win_C); 
+#ifndef NDEBUG 
+		printf("compServer -> After mpi complete for C \n"); 
+#endif 
 //
 //		// TRIAD 
 //		// send message to ioServer to complete A
@@ -494,16 +473,17 @@ int main(int argc, char** argv)
 //
 //		// send message to ioServer to exit the loop 
 		wintestflags[0] = -1;  
-//		wintestflags[1] = -1; 
-//		wintestflags[2] = -1; 
+		wintestflags[1] = -1; 
+// 		wintestflags[2] = -1; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 //#ifndef NDEBUG 
 //		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 //#endif 
 //
-		MPI_Barrier(MPI_COMM_WORLD); 	
+		// MPI_Barrier(MPI_COMM_WORLD); 	
 		dataSendComplete(win_A); 
-		//dataSendComplete(win_C); 
+		//MPI_Barrier(MPI_COMM_WORLD); 	
+		dataSendComplete(win_C); 
 		//dataSendComplete(win_B); 
 	} 
 	else 

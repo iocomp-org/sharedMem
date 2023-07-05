@@ -28,15 +28,15 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 	{
 		printf("read elements %li not equal to global size of file %i \n", num, globalSize); 
 	}
-	else
-	{
-		printf("read elements %li  are equal to global size %i \n", num, globalSize); 
-		for(int i = 0; i < num; i++)
-		{
-			printf("%lf, ", iodata_test[i]); 
-		} 
-		printf("\n"); 
-	} 
+//	else
+//	{
+//		printf("read elements %li  are equal to global size %i \n", num, globalSize); 
+//		for(int i = 0; i < num; i++)
+//		{
+//			printf("%lf, ", iodata_test[i]); 
+//		} 
+//		printf("\n"); 
+//	} 
 
 	// print elements 
 	fclose(fp);
