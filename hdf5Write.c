@@ -50,6 +50,8 @@ void phdf5write(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart,
         offset[i] = arraystart[i]; 
     }
 
+		printf("Writing HDF5 starts \n"); 
+
     /* 
      * Set up file access property list with parallel I/O access
      */

@@ -20,9 +20,9 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 		error_check(1); 
 	}
 	
-	int* iodata_test; 
-	iodata_test = (int *) malloc(sizeof(int)*globalSize); 
-	num = fread(iodata_test, sizeof(int), globalSize, fp);
+	double* iodata_test; 
+	iodata_test = (double *) malloc(sizeof(double)*globalSize); 
+	num = fread(iodata_test, sizeof(double), globalSize, fp);
 	
 	if(num!=globalSize)
 	{
@@ -30,9 +30,10 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 	}
 	else
 	{
+		printf("read elements %li  are equal to global size %i \n", num, N); 
 		for(int i = 0; i < num; i++)
 		{
-			printf("%i, ", iodata_test[i]); 
+			printf("%lf, ", iodata_test[i]); 
 		} 
 		printf("\n"); 
 	} 
