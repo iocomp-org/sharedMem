@@ -204,11 +204,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
 					error_check(ierr); 
-					mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
-					// read file and print out values 
-					printf("MPI read \n"); 
-					mpiRead(WRITEFILE[i], ioComm); 
-					// phdf5write(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
+					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 				}
 
@@ -232,10 +228,8 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 				{
 #ifndef NDEBUG 
 					printf("ioServer -> flag positive \n"); 
-#endif 
-					mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
-					mpiRead(WRITEFILE[i], ioComm); 
-					// phdf5write(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
+#endif
+					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
 				}
 			} 
@@ -263,8 +257,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		// wait for completion of all windows 
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
-		mpiiowrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i]); 
-		mpiRead(WRITEFILE[i], ioComm); 
+		fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
 		timers_end[i] = MPI_Wtime(); // finish writing timer  
 #ifndef NDEBUG 
 		printf("MPI win free IO server reached\n"); 

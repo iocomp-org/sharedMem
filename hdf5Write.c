@@ -9,7 +9,7 @@
 #include <H5FDmpi.h> 
 #include <hdf5_hl.h> 
 
-void phdf5write(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int NDIM, MPI_Comm cartcomm, char* FILENAME) 
+void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int NDIM, MPI_Comm cartcomm, char* FILENAME) 
 {   
     // Variable initialisation
     int             i, ierr, rank, size, initialized, 
@@ -68,7 +68,7 @@ void phdf5write(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart,
      * Create the dataspace for the dataset.
      */
     filespace = H5Screate_simple(NDIM, dimsf, NULL); 
-    dset_id = H5Dcreate(file_id, dsetname, H5T_NATIVE_INT, filespace, 
+    dset_id = H5Dcreate(file_id, dsetname, H5T_NATIVE_DOUBLE, filespace, 
             H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
     H5Sclose(filespace);
 
@@ -90,7 +90,7 @@ void phdf5write(int* iodata, int*arraysubsize, int* arraygsize, int* arraystart,
     plist_id = H5Pcreate(H5P_DATASET_XFER); // sets data transfer mode.
     H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE); // sets data transfer mode.
 
-    status = H5Dwrite (dset_id, H5T_NATIVE_INT, memspace, filespace, 
+    status = H5Dwrite (dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, 
             plist_id, iodata);
 
     // Free resources
