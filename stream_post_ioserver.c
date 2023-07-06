@@ -376,7 +376,9 @@ int main(int argc, char** argv)
 		printf("coompServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 		MPI_Win_start(group, 0, win_A); 
+#ifndef NDEBUG 
 		printf("compServer -> MPI window start with global rank %i \n", globalRank); 
+#endif 
 		for(int i = 0; i < N; i++)
 		{
 			// a[i] = STARTING_VAL;  
@@ -493,8 +495,10 @@ int main(int argc, char** argv)
 	stop = MPI_Wtime();
 	diff = stop - start;
 
+#ifndef NDEBUG 
 	printf("Rank %d, took %8.8fs\n",
 			globalRank,  diff);
+#endif 
 
 	MPI_Finalize();
 	return 0;

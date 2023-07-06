@@ -25,7 +25,6 @@ void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	MPI_Comm_size(cartcomm, &nprocs);
 	MPI_Comm_rank(cartcomm, &myrank);
 
-	printf("Cartcomm rank and size %i %i \n", myrank, nprocs); 
 	ierr = MPI_Cart_get(cartcomm, NDIM, dims, periods, coords); 
 	error_check(ierr); 
 
@@ -35,7 +34,7 @@ void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	MPI_Info info  = MPI_INFO_NULL; 
 
 #ifndef NDEBUG   
-	printf("MPI cartcomm got ranks \n"); 
+	printf("Cartcomm rank and size %i %i \n", myrank, nprocs); 
 	printf("arraygsize for rank %i : %i  \n",myrank, arraygsize[0]	); 
 	printf("arraysubsize for rank %i : %i \n",myrank,arraysubsize[0]); 
 	printf("arraystart for rank %i : %i  \n",myrank,arraystart[0]		); 

@@ -40,5 +40,4 @@ void mpiRead(char* FILENAME, MPI_Comm ioServerComm )
 
 	// print elements 
 	fclose(fp);
-	printf("file closed \n"); 
 }
