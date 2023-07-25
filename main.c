@@ -1,3 +1,20 @@
+/*
+ *LOOP
+ *rank 1: finish writing c
+ *rank 0; c=a
+ *rank 1: start writing c
+ *rank 1: finish writing b
+ *rank 0: b=scale(c)
+ *rank 1; start writing b
+ *rank 1: finish writing c
+ *rank 0; c = a+b
+ *rank 1: start writing c
+ *rank 1: finish writing a
+ *rank 0: a = b + scale*c
+ *rank 1: start writing a
+ *END LOOP
+*/ 
+
 #include <stdio.h>
 #include <mpi.h>
 #include <stdlib.h>  
@@ -158,7 +175,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 
 	// assign wintestflags int to test for messages from the compute server  
 	int wintestflags[NUM_WIN]; 
-	// declare mult variable to test for completition among all windows 
+	// declare mult variable to test for completion among all windows 
 	int wintestmult = 1; 
 
 	// Test for window completion 
@@ -267,6 +284,7 @@ int main(int argc, char** argv)
 #ifndef NDEBUG 
   printf("Hello world from rank %i and size %i \n", globalRank, globalSize); 
 #endif 
+	
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -306,24 +324,6 @@ int main(int argc, char** argv)
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &ioComm );
 	}
 
-	// rank 0: init(a)
-
-	// LOOP
-
-	// rank 1: finish writing c
-	// rank 0; c=a
-	// rank 1: start writing c
-	// rank 1: finish writing b
-	// rank 0: b=scale(c)
-	// rank 1; start writing b
-	// rank 1: finish writing c
-	// rank 0; c = a+b
-	// rank 1: start writing c
-	// rank 1: finish writing a
-	// rank 0: a = b + scale*c
-	// rank 1: start writing a
-
-	// END LOOP
 
 	// initialise windows for each array in both Compute and I/O process
 	if(newRank == 0)
@@ -490,15 +490,16 @@ int main(int argc, char** argv)
 		dataSendComplete(win_A); 
 		dataSendComplete(win_C); 
 		dataSendComplete(win_B); 
+
+
 	} 
 	else 
 	{
 		ioServer(ioComm, newComm); 
 	} 
 
-	stop = MPI_Wtime();
-	diff = stop - start;
-
+	wallTime = MPI_Wtime() - wallTime; 
+	
 #ifndef NDEBUG 
 	printf("Rank %d, took %8.8fs\n",
 			globalRank,  diff);
