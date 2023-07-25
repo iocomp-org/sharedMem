@@ -264,7 +264,9 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD,&globalSize); 
 	MPI_Comm newComm; 
 
+#ifndef NDEBUG 
   printf("Hello world from rank %i and size %i \n", globalRank, globalSize); 
+#endif 
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -281,7 +283,6 @@ int main(int argc, char** argv)
 	int newRank; 
 	ierr = MPI_Comm_rank(newComm,&newRank); 
 	error_check(ierr); 
-	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #ifndef NDEBUG 
 	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #endif 
