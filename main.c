@@ -386,9 +386,9 @@ int main(int argc, char** argv)
 
 		// INITIALISE A
 		// send message to ioServer to print via broadcast
-		wintestflags[0] = 1;  
-		wintestflags[1] = 0; 
-		wintestflags[2] = 0; 
+		wintestflags[0] = WIN_ACTIVATE;  
+		wintestflags[1] = WIN_NONE; 
+		wintestflags[2] = WIN_NONE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -412,9 +412,9 @@ int main(int argc, char** argv)
 		{
 			// COPY
 			// send message to ioServer to print via broadcast
-			wintestflags[0] = 0;  
-			wintestflags[1] = 1; 
-			wintestflags[2] = 0; 
+			wintestflags[0] = WIN_NONE;  
+			wintestflags[1] = WIN_ACTIVATE; 
+			wintestflags[2] = WIN_NONE; 
 			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -439,9 +439,9 @@ int main(int argc, char** argv)
 
 			// SCALE
 			// send message to ioServer to print via broadcast
-			wintestflags[0] = 0;  
-			wintestflags[1] = 0; 
-			wintestflags[2] = 1; 
+			wintestflags[0] = WIN_NONE;  
+			wintestflags[1] = WIN_NONE; 
+			wintestflags[2] = WIN_ACTIVATE; 
 			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -466,9 +466,9 @@ int main(int argc, char** argv)
 
 			// ADD 
 			// send message to ioServer to print via broadcast
-			wintestflags[0] = 0;  
-			wintestflags[1] = 2; 
-			wintestflags[2] = 0; 
+			wintestflags[0] = WIN_NONE;  
+			wintestflags[1] = WIN_WAIT; 
+			wintestflags[2] = WIN_NONE; 
 			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -495,9 +495,9 @@ int main(int argc, char** argv)
 			// send message to ioServer to complete A
 			// then update A
 			// send message to ioServer to print via broadcast
-			wintestflags[0] = 2;  
-			wintestflags[1] = 0; 
-			wintestflags[2] = 0; 
+			wintestflags[0] = WIN_WAIT;  
+			wintestflags[1] = WIN_NONE; 
+			wintestflags[2] = WIN_NONE; 
 			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -522,9 +522,9 @@ int main(int argc, char** argv)
 		} 
 
 		// send message to ioServer to exit the loop 
-		wintestflags[0] = -1;  
-		wintestflags[1] = -1; 
-		wintestflags[2] = -1; 
+		wintestflags[0] = WIN_EXIT;  
+		wintestflags[1] = WIN_EXIT; 
+		wintestflags[2] = WIN_EXIT; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -538,14 +538,18 @@ int main(int argc, char** argv)
 		wallTime = MPI_Wtime() - wallTime; 
 
 		// reduction over compute time per each compute kernel 
-		double maxCompTimer[NUM_WIN][AVGLOOPCOUNT]; 
+		double maxCompTimer[NUM_KERNELS]; 
 
-		for(int i = 0; i < NUM_WIN; i++)
+		for(int i = 0; i < NUM_KERNELS; i++)
 		{
-			MPI_Reduce(compTimer[i],maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+			MPI_Reduce(&compTimer[i],&maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 			//MPI_Reduce(waitTimer[i],maxWaitTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 			//MPI_Reduce(sendTimer[i],maxSendTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
-		} 
+		}
+		if(!computeRank)
+		{
+			printf("Max reduced time over compute kernels %lf, %lf, %lf, %lf \n", maxCompTimer[0], maxCompTimer[1], maxCompTimer[2], maxCompTimer[3]); 
+		}
 
 	} 
 	else 

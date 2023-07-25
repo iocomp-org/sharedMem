@@ -19,7 +19,7 @@
 #define N 10 
 
 // define window control integers 
-#define WIN_WRITE 1 
+#define WIN_ACTIVATE 1 
 #define WIN_WAIT 2
 #define WIN_EXIT -1
 #define WIN_NONE 0 
