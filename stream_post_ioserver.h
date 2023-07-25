@@ -13,16 +13,16 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 2
+#define AVGLOOPCOUNT 1
 
 // define problem size 
 #define N 10 
 
 // define window control integers 
+#define WIN_DEACTIVATE 0 
 #define WIN_ACTIVATE 1 
 #define WIN_WAIT 2
-#define WIN_EXIT -1
-#define WIN_DEACTIVATE 0 
+#define WIN_FREE -1
 
 // define STREAM array windows 
 #define WIN_A 0
