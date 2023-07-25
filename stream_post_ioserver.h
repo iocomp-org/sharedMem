@@ -24,6 +24,11 @@
 #define WIN_EXIT -1
 #define WIN_DEACTIVATE 0 
 
+// define STREAM array windows 
+#define WIN_A 0
+#define WIN_C 1
+#define WIN_B 2
+
 #define error_check(ierr) if(ierr!=MPI_SUCCESS){ printf("mpi error \n"); exit(1);  }  
 
 struct winElements {
