@@ -1,9 +1,29 @@
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>  
+
+// define number of shared memory windows 
 #define NUM_WIN 3
 
+// define STREAM computational kernels 
+#define	NUM_KERNELS 4
+#define COPY 0
+#define SCALE 1
+#define ADD 2 
+#define TRIAD 3
+
+// define avg loop count of stream kernels
+#define AVGLOOPCOUNT 2
+
+// define problem size 
 #define N 10 
+
+// define window control integers 
+#define WIN_WRITE 1 
+#define WIN_WAIT 2
+#define WIN_EXIT -1
+#define WIN_NONE 0 
+
 #define error_check(ierr) if(ierr!=MPI_SUCCESS){ printf("mpi error \n"); exit(1);  }  
 
 struct winElements {
