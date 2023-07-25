@@ -1,5 +1,5 @@
 CC=mpicc.mpich 
-CFLAGS=-fPIC -g -Og -DNDEBUG 
+CFLAGS=-fPIC -g -Og #-DNDEBUG 
 
 ODIR = Object_files
 
@@ -11,7 +11,7 @@ DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = main.c mpiWrite.c mpiRead.c  fileWrite.c #hdf5Write.c
+SRCS = main.c ioServer.c compServer.c mpiWrite.c mpiRead.c  fileWrite.c #hdf5Write.c
 
 _OBJS = $(SRCS:.c=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))

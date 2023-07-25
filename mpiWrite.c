@@ -6,7 +6,7 @@
 #include <memory.h>
 #include "stream_post_ioserver.h"
 
-void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int NDIM, MPI_Comm cartcomm, char* FILENAME)
+void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME)
 {   
 	int i, ierr, nprocs, myrank; 
 

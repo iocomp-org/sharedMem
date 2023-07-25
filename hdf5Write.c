@@ -9,7 +9,7 @@
 #include <H5FDmpi.h> 
 #include <hdf5_hl.h> 
 
-void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int NDIM, MPI_Comm cartcomm, char* FILENAME) 
+void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME) 
 {   
     // Variable initialisation
     int             i, ierr, rank, size, initialized, 
