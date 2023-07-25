@@ -13,7 +13,7 @@
  *rank 0: a = b + scale*c
  *rank 1: start writing a
  *END LOOP
-*/ 
+ */ 
 
 #include <stdio.h>
 #include <mpi.h>
@@ -258,7 +258,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 #ifndef NDEBUG 
 		printf("MPI win free IO server reached\n"); 
 #endif 
-		
+
 		// MPI_Barrier(MPI_COMM_WORLD); 	
 		ierr = MPI_Win_free(&win_ptr[i]);
 		error_check(ierr); 
@@ -282,9 +282,9 @@ int main(int argc, char** argv)
 	MPI_Comm newComm; 
 
 #ifndef NDEBUG 
-  printf("Hello world from rank %i and size %i \n", globalRank, globalSize); 
+	printf("Hello world from rank %i and size %i \n", globalRank, globalSize); 
 #endif 
-	
+
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -305,25 +305,25 @@ int main(int argc, char** argv)
 	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #endif 
 
-	// start timer 
-	double start, stop, diff; 
-	start = MPI_Wtime();
-
 	// divide MPI comm world into compute or I/O server based on newRank which is
 	// either 0 or 1 
+	// assign compute and I/O rank 
 	int colour_io; 
 	MPI_Comm computeComm, ioComm; 
+	int computeRank, ioRank, computeSize, ioSize;
+
 	if(newRank == 0)
 	{
 		colour = 0; 
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &computeComm );
+		MPI_Comm_rank(computeComm, &computeRank); 
 	}
 	else
 	{
 		colour = 1; 
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &ioComm );
+		MPI_Comm_rank(ioComm, &ioRank); 
 	}
-
 
 	// initialise windows for each array in both Compute and I/O process
 	if(newRank == 0)
@@ -336,6 +336,20 @@ int main(int argc, char** argv)
 		{
 			wintestflags[j] = 0; 
 		} 
+
+		// declare and initialise timers for NUM WIN = 3 and start wall Time
+		double compTimer[NUM_WIN][AVGLOOPCOUNT]; 
+		double waitTimer[NUM_WIN][AVGLOOPCOUNT]; 
+		double wallTime = MPI_Wtime(); 
+
+		for(int i = 0; i < NUM_WIN; i++)
+		{
+			for(int j = 0; j < AVGLOOPCOUNT; j++)
+			{
+				compTimer[i][j] = 0.0; 
+				waitTimer[i][j] = 0.0; 
+			}
+		}
 
 		// Allocate windows in order 
 		MPI_Win win_A, win_B, win_C;
@@ -394,93 +408,123 @@ int main(int argc, char** argv)
 #endif 
 
 		/* Start STREAM loop */ 
-		// COPY
-		// send message to ioServer to print via broadcast
-		wintestflags[0] = 0;  
-		wintestflags[1] = 1; 
-		wintestflags[2] = 0; 
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-#ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-#endif 
-		MPI_Win_start(group, 0, win_C); 
-		for(int i = 0; i < N; i++)
+		for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
 		{
-			c[i] = a[i]; 
-		}
-		MPI_Win_complete(win_C); 
+			// COPY
+			// send message to ioServer to print via broadcast
+			wintestflags[0] = 0;  
+			wintestflags[1] = 1; 
+			wintestflags[2] = 0; 
+			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi window unlock for C \n"); 
+			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-		// SCALE
-		// send message to ioServer to print via broadcast
-		wintestflags[0] = 0;  
-		wintestflags[1] = 0; 
-		wintestflags[2] = 1; 
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+			compTimer[COPY][iter] = MPI_Wtime();  
+			MPI_Win_start(group, 0, win_C); 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-#endif 
-		MPI_Win_start(group, 0, win_B); 
-		for(int i = 0; i < N; i++)
-		{
-			b[i] = SCALAR * c[i]; 
-		}
-		MPI_Win_complete(win_B); 
-#ifndef NDEBUG 
-		printf("compServer -> After mpi window unlock for B \n"); 
+			printf("compServer -> After win start for C \n"); 
 #endif 
 
-		// ADD 
-		// send message to ioServer to print via broadcast
-		wintestflags[0] = 0;  
-		wintestflags[1] = 2; 
-		wintestflags[2] = 0; 
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+			for(int i = 0; i < N; i++)
+			{
+				c[i] = a[i]; 
+			}
+
+			MPI_Win_complete(win_C); 
+			compTimer[COPY][iter] = MPI_Wtime() - compTimer[COPY][iter]; 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+			printf("compServer -> After mpi window unlock for C \n"); 
 #endif 
 
-		MPI_Win_start(group, 0, win_C); 
+			// SCALE
+			// send message to ioServer to print via broadcast
+			wintestflags[0] = 0;  
+			wintestflags[1] = 0; 
+			wintestflags[2] = 1; 
+			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("compServer -> After win start for C \n"); 
-#endif 
-		for(int i = 0; i < N; i++)
-		{
-			c[i] = a[i] + b[i]; 
-		}
-		MPI_Win_complete(win_C); 
-#ifndef NDEBUG 
-		printf("compServer -> After mpi complete for C \n"); 
+			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-		// TRIAD 
-		// send message to ioServer to complete A
-		// then update A
-		// send message to ioServer to print via broadcast
-		wintestflags[0] = 2;  
-		wintestflags[1] = 0; 
-		wintestflags[2] = 0; 
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+			compTimer[SCALE][iter] = MPI_Wtime(); 
+			MPI_Win_start(group, 0, win_B); 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+			printf("compServer -> After win start for B\n"); 
 #endif 
 
-		MPI_Win_start(group, 0, win_A); 
-		for(int i = 0; i < N; i++)
-		{
-			a[i] = b[i] + SCALAR*c[i]; 
-		}
-		MPI_Win_complete(win_A); 
+			for(int i = 0; i < N; i++)
+			{
+				b[i] = SCALAR * c[i]; 
+			}
+
+			MPI_Win_complete(win_B); 
+			compTimer[SCALE][iter] = MPI_Wtime() - compTimer[SCALE][iter]; 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi complete for A \n"); 
+			printf("compServer -> After mpi window unlock for B \n"); 
 #endif 
+
+			// ADD 
+			// send message to ioServer to print via broadcast
+			wintestflags[0] = 0;  
+			wintestflags[1] = 2; 
+			wintestflags[2] = 0; 
+			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+#ifndef NDEBUG 
+			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+#endif 
+
+			compTimer[ADD][iter] = MPI_Wtime(); 
+			MPI_Win_start(group, 0, win_C); 
+#ifndef NDEBUG 
+			printf("compServer -> After win start for C \n"); 
+#endif 
+
+			for(int i = 0; i < N; i++)
+			{
+				c[i] = a[i] + b[i]; 
+			}
+
+			MPI_Win_complete(win_C); 
+			compTimer[ADD][iter] = MPI_Wtime() - compTimer[ADD][iter]; 
+#ifndef NDEBUG 
+			printf("compServer -> After mpi complete for C \n"); 
+#endif 
+
+			// TRIAD 
+			// send message to ioServer to complete A
+			// then update A
+			// send message to ioServer to print via broadcast
+			wintestflags[0] = 2;  
+			wintestflags[1] = 0; 
+			wintestflags[2] = 0; 
+			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+#ifndef NDEBUG 
+			printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+#endif 
+
+			compTimer[TRIAD][iter] = MPI_Wtime(); 
+			MPI_Win_start(group, 0, win_A); 
+#ifndef NDEBUG 
+			printf("compServer -> After mpi complete for A \n"); 
+#endif 
+
+			for(int i = 0; i < N; i++)
+			{
+				a[i] = b[i] + SCALAR*c[i]; 
+			}
+
+			MPI_Win_complete(win_A); 
+			compTimer[TRIAD][iter] = MPI_Wtime() - compTimer[TRIAD][iter]; 
+#ifndef NDEBUG 
+			printf("compServer -> After mpi complete for A \n"); 
+#endif 
+		} 
 
 		// send message to ioServer to exit the loop 
 		wintestflags[0] = -1;  
 		wintestflags[1] = -1; 
- 		wintestflags[2] = -1; 
+		wintestflags[2] = -1; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -491,19 +535,23 @@ int main(int argc, char** argv)
 		dataSendComplete(win_C); 
 		dataSendComplete(win_B); 
 
+		wallTime = MPI_Wtime() - wallTime; 
+
+		// reduction over compute time per each compute kernel 
+		double maxCompTimer[NUM_WIN][AVGLOOPCOUNT]; 
+
+		for(int i = 0; i < NUM_WIN; i++)
+		{
+			MPI_Reduce(compTimer[i],maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+			//MPI_Reduce(waitTimer[i],maxWaitTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+			//MPI_Reduce(sendTimer[i],maxSendTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+		} 
 
 	} 
 	else 
 	{
 		ioServer(ioComm, newComm); 
 	} 
-
-	wallTime = MPI_Wtime() - wallTime; 
-	
-#ifndef NDEBUG 
-	printf("Rank %d, took %8.8fs\n",
-			globalRank,  diff);
-#endif 
 
 	MPI_Finalize();
 	return 0;
