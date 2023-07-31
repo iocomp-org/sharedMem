@@ -121,7 +121,6 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 #endif 
 
 		compTimer[COPY][iter] = MPI_Wtime();  
-		printf("Compute server, window start %i \n", WIN_C); 
 		MPI_Win_start(group, 0, win_C); 
 #ifndef NDEBUG 
 		printf("compServer -> After win start for C \n"); 
@@ -248,10 +247,12 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 
 	// reduction over compute time per each compute kernel 
 	double maxCompTimer[NUM_KERNELS]; 
+	double maxWallTime; 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
 		MPI_Reduce(&compTimer[i],&maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+		MPI_Reduce(wallTime,&maxWallTime[i],1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 		//MPI_Reduce(waitTimer[i],maxWaitTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 		//MPI_Reduce(sendTimer[i],maxSendTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 	}

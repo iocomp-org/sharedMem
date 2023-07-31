@@ -135,7 +135,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 
 				//	Post window for access to array 
 				//	and start timer for that window 
-				printf("ioServer Window %i post \n", i); 
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
