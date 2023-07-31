@@ -13,10 +13,10 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 1
+#define AVGLOOPCOUNT 2
 
 // define problem size and dimension of data 
-#define N 10 
+#define N 1000
 #define NDIM 1
 
 // define window control integers 
