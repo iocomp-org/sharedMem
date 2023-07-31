@@ -75,9 +75,9 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 
 	// INITIALISE A
 	// send message to ioServer to print via broadcast
-	wintestflags[0] = WIN_ACTIVATE;  
-	wintestflags[1] = WIN_DEACTIVATE; 
-	wintestflags[2] = WIN_DEACTIVATE; 
+	wintestflags[WIN_A] = WIN_ACTIVATE;  
+	wintestflags[WIN_C] = WIN_DEACTIVATE; 
+	wintestflags[WIN_B] = WIN_DEACTIVATE; 
 	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 	printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
