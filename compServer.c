@@ -99,10 +99,21 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	/* Start STREAM loop */ 
 	for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
 	{
+#ifndef NDEBUG 
+		printf("compServer -> LOOP number %i \n", iter+1); 
+#endif 
 		// COPY
 		// send message to ioServer to print via broadcast
 		wintestflags[WIN_A] = WIN_DEACTIVATE;  
-		wintestflags[WIN_C] = WIN_ACTIVATE; 
+		// wait for C window from previous loop
+		if(iter > 0)
+		{
+			wintestflags[WIN_C] = WIN_WAIT; 
+		}
+		else
+		{
+			wintestflags[WIN_C] = WIN_ACTIVATE; 
+		}
 		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
@@ -110,6 +121,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 #endif 
 
 		compTimer[COPY][iter] = MPI_Wtime();  
+		printf("Compute server, window start %i \n", WIN_C); 
 		MPI_Win_start(group, 0, win_C); 
 #ifndef NDEBUG 
 		printf("compServer -> After win start for C \n"); 
@@ -130,7 +142,14 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 		// send message to ioServer to print via broadcast
 		wintestflags[WIN_A] = WIN_DEACTIVATE;  
 		wintestflags[WIN_C] = WIN_DEACTIVATE; 
-		wintestflags[WIN_B] = WIN_ACTIVATE; 
+		if(iter > 0)
+		{
+			wintestflags[WIN_B] = WIN_WAIT; 
+		}
+		else
+		{
+			wintestflags[WIN_B] = WIN_ACTIVATE; 
+		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -208,6 +227,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 #ifndef NDEBUG 
 		printf("compServer -> After mpi complete for A \n"); 
 #endif 
+
 	} 
 
 	// send message to ioServer to free the windows and exit the recv loop

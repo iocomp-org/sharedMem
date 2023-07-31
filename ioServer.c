@@ -108,7 +108,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// declare mult variable to test for completion among all windows 
 	int wintestmult = 1; 
 	
-	double waitTime_start, waitTime_end; 
 	// Test for window completion 
 	do 
 	{
@@ -122,7 +121,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		{
 			if(wintestflags[i] > WIN_DEACTIVATE) // anything over 0 means go for printing 
 			{
-				if(wintestflags[i]==WIN_WAIT) // in this case WIN WAIT is coming before 
+				if(wintestflags[i]==WIN_WAIT) // in this case WIN WAIT is coming before WIN POST, but it assumes that WIN POST has been called before. 
 				{
 #ifndef NDEBUG 
 					printf("ioServer -> flag negative and win wait implemented\n"); 
@@ -132,11 +131,11 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 					error_check(ierr); 
 					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
 					timers_end[i] = MPI_Wtime(); // finish writing timer  
-					printf("MPI wait time = %lf \n", waitTime_end - waitTime_start); 
 				}
 
 				//	Post window for access to array 
-				//	and start timer for that window  
+				//	and start timer for that window 
+				printf("ioServer Window %i post \n", i); 
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
