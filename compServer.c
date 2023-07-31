@@ -27,11 +27,11 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	} 
 
 	// declare and initialise timers for NUM WIN = 3 and start wall Time
-	double compTimer[NUM_WIN][AVGLOOPCOUNT]; 
-	double waitTimer[NUM_WIN][AVGLOOPCOUNT]; 
+	double compTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
+	double waitTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double wallTime = MPI_Wtime(); 
 
-	for(int i = 0; i < NUM_WIN; i++)
+	for(int i = 0; i < NUM_KERNELS; i++)
 	{
 		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
