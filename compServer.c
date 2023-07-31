@@ -246,9 +246,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	wallTime = MPI_Wtime() - wallTime; 
 
 	// reduction over compute time per each compute kernel 
-	double compTimer_max[NUM_KERNELS]; 
-	double compTimer_min[NUM_KERNELS]; 
-	double compTimer_sum[NUM_KERNELS]; 
+	double compTimer_max[NUM_KERNELS][AVGLOOPCOUNT]; 
+	double compTimer_min[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double compTimer_avg[NUM_KERNELS]; 
 
 	double wallTime_max; 
@@ -258,24 +257,45 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	{
 		MPI_Reduce(&compTimer[i],&compTimer_max[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 		MPI_Reduce(&compTimer[i],&compTimer_min[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MIN, 0,computeComm); 
-		MPI_Reduce(&compTimer[i],&compTimer_sum[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_SUM, 0,computeComm); 
 	}
 
 	if(!computeRank)
 	{
 		char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
 		double bytes = N*sizeof(double); 
+
+		// calculate max, min, avg across loops across ranks. 
+		double minTime[NUM_KERNELS], maxTime[NUM_KERNELS]; 
+		for(int i = 0; i < NUM_KERNELS; i++)
+		{
+			compTimer_avg[i] = 0.0; 
+			maxTime[i] = compTimer_max[i][0]; 
+			minTime[i] = compTimer_min[i][0]; 
+			for(int j = 0; j < AVGLOOPCOUNT; j++)
+			{
+				compTimer_avg[i] += compTimer_max[i][j]; 
+				if(maxTime[i] < compTimer_max[i][j])
+				{
+					maxTime[i] = compTimer_max[i][j];  
+				} 
+				if(minTime[i] > compTimer_min[i][j])
+				{
+					minTime[i] = compTimer_min[i][j];  
+				} 
+			}
+			compTimer_avg[i] /= AVGLOOPCOUNT; 
+		}
+		
+		// print timers 
 	  printf("Function,Best Rate MB/s,Avg time,Min time,Max time\n");
     for (int j=0; j<NUM_KERNELS; j++) {
-			compTimer_avg[j] = compTimer_sum[j]/AVGLOOPCOUNT; 
 			printf("%s,%lf,%lf,%lf,%lf\n", STREAM_kernels[j],
-	       1.0E-06 * bytes/compTimer_min[j],
+	       1.0E-06 * bytes/minTime[j],
 	       compTimer_avg[j],
-	       compTimer_min[j],
-	       compTimer_max[j]);
+	       minTime[j],
+	       maxTime[j]);
     }
 
-		// printf("Max reduced time %lf, %lf, %lf, %lf \n", maxCompTimer[0], maxCompTimer[1], maxCompTimer[2], maxCompTimer[3]); 
 		printf("Max reduced wall time %lf \n", wallTime_max); 
 	}
 } 
