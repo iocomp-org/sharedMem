@@ -248,17 +248,16 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	// reduction over compute time per each compute kernel 
 	double maxCompTimer[NUM_KERNELS]; 
 	double maxWallTime; 
+	MPI_Reduce(&wallTime,&maxWallTime,1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
 		MPI_Reduce(&compTimer[i],&maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
-		MPI_Reduce(wallTime,&maxWallTime[i],1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
-		//MPI_Reduce(waitTimer[i],maxWaitTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
-		//MPI_Reduce(sendTimer[i],maxSendTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 	}
 
 	if(!computeRank)
 	{
 		printf("Max reduced time over compute kernels %lf, %lf, %lf, %lf \n", maxCompTimer[0], maxCompTimer[1], maxCompTimer[2], maxCompTimer[3]); 
+		printf("Max reduced wall time %lf \n", maxWallTime); 
 	}
 } 
