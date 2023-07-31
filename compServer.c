@@ -261,8 +261,15 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 
 	if(!computeRank)
 	{
+		// stream initialisations 
 		char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
-		double bytes = N*sizeof(double); 
+		// stream data size used in different kernels 
+		double bytes[NUM_KERNELS]; 
+		bytes[COPY]			= 2*N*sizeof(double); 
+		bytes[SCALE]		= 2*N*sizeof(double); 
+		bytes[ADD]			= 3*N*sizeof(double); 
+		bytes[TRIAD]		= 3*N*sizeof(double); 
+
 
 		// calculate max, min, avg across loops across ranks. 
 		double minTime[NUM_KERNELS], maxTime[NUM_KERNELS]; 
@@ -288,12 +295,12 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 		
 		// print timers 
 	  printf("Function,Best Rate MB/s,Avg time,Min time,Max time\n");
-    for (int j=0; j<NUM_KERNELS; j++) {
-			printf("%s,%lf,%lf,%lf,%lf\n", STREAM_kernels[j],
-	       1.0E-06 * bytes/minTime[j],
-	       compTimer_avg[j],
-	       minTime[j],
-	       maxTime[j]);
+    for (int i=0; i<NUM_KERNELS; i++) {
+			printf("%s,%lf,%lf,%lf,%lf\n", STREAM_kernels[i],
+	       1.0E-06 * bytes[i]/minTime[i],
+	       compTimer_avg[i],
+	       minTime[i],
+	       maxTime[i]);
     }
 
 		printf("Max reduced wall time %lf \n", wallTime_max); 
