@@ -246,18 +246,36 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	wallTime = MPI_Wtime() - wallTime; 
 
 	// reduction over compute time per each compute kernel 
-	double maxCompTimer[NUM_KERNELS]; 
-	double maxWallTime; 
-	MPI_Reduce(&wallTime,&maxWallTime,1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+	double compTimer_max[NUM_KERNELS]; 
+	double compTimer_min[NUM_KERNELS]; 
+	double compTimer_sum[NUM_KERNELS]; 
+	double compTimer_avg[NUM_KERNELS]; 
+
+	double wallTime_max; 
+	MPI_Reduce(&wallTime,&wallTime_max,1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
-		MPI_Reduce(&compTimer[i],&maxCompTimer[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+		MPI_Reduce(&compTimer[i],&compTimer_max[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+		MPI_Reduce(&compTimer[i],&compTimer_min[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MIN, 0,computeComm); 
+		MPI_Reduce(&compTimer[i],&compTimer_sum[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_SUM, 0,computeComm); 
 	}
 
 	if(!computeRank)
 	{
-		printf("Max reduced time over compute kernels %lf, %lf, %lf, %lf \n", maxCompTimer[0], maxCompTimer[1], maxCompTimer[2], maxCompTimer[3]); 
-		printf("Max reduced wall time %lf \n", maxWallTime); 
+		char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
+		double bytes = N*sizeof(double); 
+	  printf("Function,Best Rate MB/s,Avg time,Min time,Max time\n");
+    for (int j=0; j<NUM_KERNELS; j++) {
+			compTimer_avg[j] = compTimer_sum[j]/AVGLOOPCOUNT; 
+			printf("%s,%lf,%lf,%lf,%lf\n", STREAM_kernels[j],
+	       1.0E-06 * bytes/compTimer_min[j],
+	       compTimer_avg[j],
+	       compTimer_min[j],
+	       compTimer_max[j]);
+    }
+
+		// printf("Max reduced time %lf, %lf, %lf, %lf \n", maxCompTimer[0], maxCompTimer[1], maxCompTimer[2], maxCompTimer[3]); 
+		printf("Max reduced wall time %lf \n", wallTime_max); 
 	}
 } 
