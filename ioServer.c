@@ -22,15 +22,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 
 	struct params ioParams; 
 
-//	// timer variables
-//	// winTime measures the time taken from issuing of the win start to win wait 
-//	// writeTime measures the time taken for file write to complete 
-//	double winTime[NUM_WIN][AVGLOOPCOUNT]; 
-//	double winTime_max[NUM_WIN][AVGLOOPCOUNT]; 
-//	double writeTime[NUM_WIN][AVGLOOPCOUNT]; 
-//	double writeTime_max[NUM_WIN][AVGLOOPCOUNT]; 
-//	double fileSize; 
-
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize,  
 			reorder = 0, 
@@ -38,7 +29,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 			coords[NDIM], 
 			periods[NDIM];
 
-	// initialise 
+	// initialise dims, coords and periods
 	for(int i = 0; i < NDIM; i++)
 	{
 		dims_mpi[i] = 0; 
