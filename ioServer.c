@@ -20,17 +20,16 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	int ierr; 
 	int soi = sizeof(double); 
 
-	// timer variables
-	// winTime measures the time taken from issuing of the win start to win wait 
-	// writeTime measures the time taken for file write to complete 
-	double winTime[NUM_WIN][AVGLOOPCOUNT]; 
-	double winTime_max[NUM_WIN][AVGLOOPCOUNT]; 
-	double writeTime[NUM_WIN][AVGLOOPCOUNT]; 
-	double writeTime_max[NUM_WIN][AVGLOOPCOUNT]; 
-	double fileSize; 
+	struct params ioParams; 
 
-	// declare array of write files 
-	char WRITEFILE[NUM_WIN][10]; 
+//	// timer variables
+//	// winTime measures the time taken from issuing of the win start to win wait 
+//	// writeTime measures the time taken for file write to complete 
+//	double winTime[NUM_WIN][AVGLOOPCOUNT]; 
+//	double winTime_max[NUM_WIN][AVGLOOPCOUNT]; 
+//	double writeTime[NUM_WIN][AVGLOOPCOUNT]; 
+//	double writeTime_max[NUM_WIN][AVGLOOPCOUNT]; 
+//	double fileSize; 
 
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize,  
@@ -52,16 +51,16 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	error_check(ierr);
 
 	// assign arrray size, subsize and global size 
-	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
+	// int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
 	for(int i = 0; i < NDIM; i++)
 	{
-		arraysubsize[i] = N; 
-		arraygsize[i] = N;
-		arraystart[i] = 0; 
+		ioParams.arraysubsize[i] = N; 
+		ioParams.arraygsize[i] = N;
+		ioParams.arraystart[i] = 0; 
 	}
 	// first element of array start and size different 
-	arraystart[0] = N*ioRank;
-	arraygsize[0] = N*ioSize; 
+	ioParams.arraystart[0] = N*ioRank;
+	ioParams.arraygsize[0] = N*ioSize; 
 
 	// allocate shared windows 
 	for(int i = 0; i < NUM_WIN; i++)
@@ -76,13 +75,13 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		int arrayNumInt = '0' + i; 
 		char arrayNumChar = (char) arrayNumInt; 
 		char arrayNumString[] = {arrayNumChar, '\0'}; 
-		strcpy(WRITEFILE[i], arrayNumString); 
+		strcpy(ioParams.WRITEFILE[i], arrayNumString); 
 		char EXT[] = ".dat"; 
 		// char EXT[] = "array.h5"; 
-		strcat(WRITEFILE[i], EXT); 
+		strcat(ioParams.WRITEFILE[i], EXT); 
 
 		// delete the previous files 
-		int test = remove(WRITEFILE[i]);
+		int test = remove(ioParams.WRITEFILE[i]);
 	} 
 
 	// allocate arrays using window pointers 
@@ -108,7 +107,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 
 	/* Compute group consists of rank 0*/
 	MPI_Group_incl(comm_group,1,ranks,&group); 
-
 	// assign wintestflags int to test for messages from the compute server  
 	int wintestflags[NUM_WIN]; 
 	// declare mult variable to test for completion among all windows 
@@ -123,8 +121,8 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		// initialise timers 
 		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
-			winTime[i][j] = 0.0; 
-			writeTime[i][j] = 0.0; 
+			ioParams.winTime[i][j] = 0.0; 
+			ioParams.writeTime[i][j] = 0.0; 
 		}
 	}
 #endif 
@@ -150,14 +148,14 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 					ierr = MPI_Win_wait(win_ptr[i]); 
 					error_check(ierr); 
 #ifdef IOBW
-					writeTime[i][loopCounter[i]] = MPI_Wtime(); 
+					ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime(); 
 #endif 
-					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+					fileWrite(array[i], ioParams.arraysubsize, ioParams.arraygsize, ioParams.arraystart, NDIM, cartcomm, ioParams.WRITEFILE[i], ioComm); 
 #ifdef IOBW
 					// finish write time 
-					writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+					ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.writeTime[i][loopCounter[i]]; 
 					// finish winTime 
-					winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+					ioParams.winTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.winTime[i][loopCounter[i]];   
 #endif 
 				}
 
@@ -170,7 +168,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 #ifdef IOBW	
 				// start loopCounter after posting winPost 
 				loopCounter[i]++; 
-				winTime[i][loopCounter[i]] = MPI_Wtime();
+				ioParams.winTime[i][loopCounter[i]] = MPI_Wtime();
 #endif 
 
 				// test for window completion 	
@@ -186,14 +184,14 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 					printf("ioServer -> flag positive \n"); 
 #endif
 #ifdef IOBW
-					writeTime[i][loopCounter[i]] = MPI_Wtime(); 
+					ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime(); 
 #endif 
-					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+					fileWrite(array[i], ioParams.arraysubsize, ioParams.arraygsize, ioParams.arraystart, NDIM, cartcomm, ioParams.WRITEFILE[i], ioComm); 
 #ifdef IOBW
 					// finish write time 
-					writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+					ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.writeTime[i][loopCounter[i]]; 
 					// finish winTime 
-					winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+					ioParams.winTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.winTime[i][loopCounter[i]];   
 #endif 
 				}
 			} 
@@ -222,16 +220,16 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
 #ifdef IOBW
-		writeTime[i][loopCounter[i]] = MPI_Wtime(); 
+		ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime(); 
 #endif 
-		fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+		fileWrite(array[i], ioParams.arraysubsize, ioParams.arraygsize, ioParams.arraystart, NDIM, cartcomm, ioParams.WRITEFILE[i], ioComm); 
 		// finish writing timer
 
 #ifdef IOBW
 		// finish write time 
-		writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+		ioParams.writeTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.writeTime[i][loopCounter[i]]; 
 		// finish winTime 
-		winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+		ioParams.winTime[i][loopCounter[i]] = MPI_Wtime() - ioParams.winTime[i][loopCounter[i]];   
 #endif 
 #ifndef NDEBUG 
 		printf("MPI win free IO server reached\n"); 
@@ -260,15 +258,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// MPI reduction of writeTime array over all IO ranks 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
-		MPI_Reduce(writeTime[i], writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
-		MPI_Reduce(winTime[i], winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
+		MPI_Reduce(ioParams.writeTime[i], ioParams.writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
+		MPI_Reduce(ioParams.winTime[i], ioParams.winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
 	}
 
 	// calculate file size for B/W calculation 
-	fileSize = 1; 
+	ioParams.fileSize = 1; 
 	for(int i = 0; i < NDIM; i++)
 	{
-		fileSize *= arraysubsize[i]; 
+		ioParams.fileSize *= ioParams.arraysubsize[i]; 
 	}
 	
 	// ioRank = 0 writes to file 
@@ -278,7 +276,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		{
 			for(int i = 0; i < NUM_WIN; i++)
 			{
-				fprintf(out,"%i,%.3f, %.3f, %.3f \n",i,winTime_max[i][j],writeTime_max[i][j],fileSize/writeTime_max[i][j]); 
+				fprintf(out,"%i,%.3f, %.3f, %.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],ioParams.fileSize/ioParams.writeTime_max[i][j]); 
 			} 
 		} 
 	}
