@@ -13,7 +13,7 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 2
+#define AVGLOOPCOUNT 10
 
 // define problem size and dimension of data 
 #define N 1000
@@ -40,6 +40,34 @@ struct winElements {
 	MPI_Win win; 
 	double* array; 
 	}; 
+/*
+ * structure passes around to most functions in program 
+ */ 
+struct params 
+{
+	// for io_libraries function 
+	// int NDIM; 
+	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
+	int globalDataSize; 
+	int localDataSize; 
+
+	// filenames 
+	char WRITEFILE[NUM_WIN][10]; 
+	
+	// timer variables
+	// winTime measures the time taken from issuing of the win start to win wait 
+	// writeTime measures the time taken for file write to complete 
+	double winTime[NUM_WIN][AVGLOOPCOUNT]; 
+	double winTime_max[NUM_WIN][AVGLOOPCOUNT]; 
+	double writeTime[NUM_WIN][AVGLOOPCOUNT]; 
+	double writeTime_max[NUM_WIN][AVGLOOPCOUNT]; 
+	double fileSize; 
+
+	// communicators 
+	MPI_Comm cartcomm, newComm, ioComm; 
+
+}; 
+extern struct iocomp_params iocompParams; 
 void initialise(int* array,int value); 
 void printData(int* recv); 
 // void dataSend(int len, MPI_Comm newComm, int* values); 
@@ -54,5 +82,5 @@ void ioServerWrite(char* WRITEFILE, int* array, int elementsNum);
 void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
 void mpiRead(char* FILENAME, MPI_Comm ioServerComm ); 
 void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
-void fileWrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME, MPI_Comm ioComm); 
+void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm); 
