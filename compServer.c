@@ -5,6 +5,8 @@
 #include <assert.h> 
 #include "stream_post_ioserver.h"
 
+#define FILENAME "compserver_output.csv"
+
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 {
 
@@ -30,6 +32,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 	double compTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double waitTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double wallTime = MPI_Wtime(); 
+
+	FILE* out; 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
@@ -293,16 +297,23 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 			compTimer_avg[i] /= AVGLOOPCOUNT; 
 		}
 		
-		// print timers 
-	  printf("Function,Best Rate MB/s,Avg time,Min time,Max time\n");
+		int test = remove(FILENAME);
+		out = fopen(FILENAME, "w+");
+		if (out == NULL)
+		{
+			printf("Error: No output file\n");
+			exit(1);
+		}
+		// header for compute output 
+	  fprintf(out,"Function,Best Rate MB/s,Avg time,Min time,Max time,Max Wall time\n");
+
     for (int i=0; i<NUM_KERNELS; i++) {
-			printf("%s,%lf,%lf,%lf,%lf\n", STREAM_kernels[i],
+			fprintf(out,"%s,%lf,%lf,%lf,%lf,\n", STREAM_kernels[i],
 	       1.0E-06 * bytes[i]/minTime[i],
 	       compTimer_avg[i],
 	       minTime[i],
 	       maxTime[i]);
     }
-
-		printf("Max reduced wall time %lf \n", wallTime_max); 
+		fprintf(out,",,,,,%lf \n", wallTime_max); 
 	}
 } 
