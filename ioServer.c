@@ -114,148 +114,173 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// declare mult variable to test for completion among all windows 
 	int wintestmult = 1; 
 
-		// Test for window completion 
-		do 
+#ifdef IOBW
+	// loopCounter to assign timers per loop iteration for each window
+	int loopCounter[NUM_WIN]; 
+	for(int i = 0 ; i < NUM_WIN; i ++)
+	{
+		loopCounter[i] = 0; 
+		// initialise timers 
+		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
-			MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+			winTime[i][j] = 0.0; 
+			writeTime[i][j] = 0.0; 
+		}
+	}
+#endif 
+	// Test for window completion 
+	do 
+	{
+		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-			printf("ioServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		printf("ioServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-			// iterate across all windows 
-			for(int i = 0; i < NUM_WIN; i++)
-			{
-				if(wintestflags[i] > WIN_DEACTIVATE) // anything over 0 means go for printing 
-				{
-					if(wintestflags[i]==WIN_WAIT) // in this case WIN WAIT is coming before WIN POST, but it assumes that WIN POST has been called before. 
-					{
-#ifndef NDEBUG 
-						printf("ioServer -> flag negative and win wait implemented\n"); 
-#endif 
-						// wait for window completion 
-						ierr = MPI_Win_wait(win_ptr[i]); 
-						error_check(ierr); 
-#ifdef IOBW
-						writeTime[i] = MPI_Wtime(); 
-#endif 
-						fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
-#ifdef IOBW
-						// finish write time 
-						writeTime[i] = MPI_Wtime() - writeTime[i]; 
-						// finish winTime 
-						winTime[i] = MPI_Wtime() - winTime[i];   
-#endif 
-					}
-
-					//	Post window for starting access to array 
-					ierr = MPI_Win_post(group, 0, win_ptr[i]);
-					error_check(ierr); 
-#ifndef NDEBUG 
-					printf("ioServer -> post MPI post for window %i \n", i); 
-#endif 
-#ifdef IOBW
-					winTime[i] = MPI_Wtime();
-#endif 
-
-					// test for window completion 	
-					ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
-					error_check(ierr);
-#ifndef NDEBUG 
-					printf("ioServer -> win test\n"); 
-#endif 
-					// if window is available to print then print and end timer 
-					if(flag[i])
-					{
-#ifndef NDEBUG 
-						printf("ioServer -> flag positive \n"); 
-#endif
-#ifdef IOBW
-						writeTime[i] = MPI_Wtime(); 
-#endif 
-						fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
-#ifdef IOBW
-						// finish writing timer
-						writeTime[i] = MPI_Wtime() - writeTime[i]; 
-						// finish winTime 
-						winTime[i] = MPI_Wtime() - winTime[i];   
-#endif 
-					}
-				} 
-			}
-
-			// check if no more messages left 
-			wintestmult = 1;  // reset value 
-			for(int j = 0; j < NUM_WIN; j++)
-			{
-				wintestmult *= wintestflags[j]; 
-			} 
-#ifndef NDEBUG 
-			printf("ioServer -> wintestmult value %i\n", wintestmult); 
-#endif 
-		}while(!wintestmult);  // test for completion of all windows 
-
-#ifndef NDEBUG 
-		printf("ioServer -> loop server exited \n"); 
-#endif 
-
-		// free windows and pointer 
-		// while freeing, check if there are any opened windows 
+		// iterate across all windows 
 		for(int i = 0; i < NUM_WIN; i++)
 		{
-			// wait for completion of all windows 
-			ierr = MPI_Win_wait(win_ptr[i]); 
-			error_check(ierr); 
-			fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
-			// finish writing timer
-
+			if(wintestflags[i] > WIN_DEACTIVATE) // anything over 0 means go for printing 
+			{
+				if(wintestflags[i]==WIN_WAIT) // in this case WIN WAIT is coming before WIN POST, but it assumes that WIN POST has been called before. 
+				{
+#ifndef NDEBUG 
+					printf("ioServer -> flag negative and win wait implemented\n"); 
+#endif 
+					// wait for window completion 
+					ierr = MPI_Win_wait(win_ptr[i]); 
+					error_check(ierr); 
 #ifdef IOBW
-			writeTime[i] = MPI_Wtime() - writeTime[i]; 
-			// finish winTime 
-			winTime[i] = MPI_Wtime() - winTime[i];   
+					writeTime[i][loopCounter[i]] = MPI_Wtime(); 
 #endif 
+					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+#ifdef IOBW
+					// finish write time 
+					writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+					// finish winTime 
+					winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+#endif 
+				}
+
+				//	Post window for starting access to array 
+				ierr = MPI_Win_post(group, 0, win_ptr[i]);
+				error_check(ierr); 
 #ifndef NDEBUG 
-			printf("MPI win free IO server reached\n"); 
+				printf("ioServer -> post MPI post for window %i \n", i); 
+#endif 
+#ifdef IOBW	
+				// start loopCounter after posting winPost 
+				loopCounter[i]++; 
+				winTime[i][loopCounter[i]] = MPI_Wtime();
 #endif 
 
-			// MPI_Barrier(MPI_COMM_WORLD); 	
-			ierr = MPI_Win_free(&win_ptr[i]);
-			error_check(ierr); 
-			timers_end[i] = MPI_Wtime(); // finish writing timer  
+				// test for window completion 	
+				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
+				error_check(ierr);
 #ifndef NDEBUG 
-			printf("ioServer -> timer ended for array %i, time %lf \n", i, timers_end[i] - timers_start[i]); 
+				printf("ioServer -> win test\n"); 
 #endif 
+				// if window is available to print then print and end timer 
+				if(flag[i])
+				{
+#ifndef NDEBUG 
+					printf("ioServer -> flag positive \n"); 
+#endif
+#ifdef IOBW
+					writeTime[i][loopCounter[i]] = MPI_Wtime(); 
+#endif 
+					fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+#ifdef IOBW
+					// finish write time 
+					writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+					// finish winTime 
+					winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+#endif 
+				}
+			} 
+		}
+
+		// check if no more messages left 
+		wintestmult = 1;  // reset value 
+		for(int j = 0; j < NUM_WIN; j++)
+		{
+			wintestmult *= wintestflags[j]; 
 		} 
-		
-		// print out timers by reducing all the variables to get the maximum value 
-#ifdef IOBW
-				FILE* out;
-				if(!ioRank)
-				{
-					int test = remove(FILENAME);
-					out = fopen(FILENAME, "w+");
-					if (out == NULL)
-					{
-						printf("Error: No output file\n");
-						exit(1);
-					}
-					// header for print statements
-					fprintf(out,"Window Number, WriteTime, IO BW \n"); 
-				} 
-				
-				// MPI reduction of writeTime array over all IO ranks 
-				MPI_Reduce(writeTime, writeTime_max, NUM_WIN, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
-				fileSize = 1; 
-				// calculate file size for B/W calculation 
-				for(int i = 0; i < NDIM; i++)
-				{
-					fileSize *= arraysubsize[i]; 
-				}
-				if(!ioRank)
-				{
-					for(int i = 0; i < NUM_WIN; i++)
-					{
-						fprintf(out,"%i, %lf, %lf \n",i,writeTime_max[i],fileSize/writeTime_max[i]); 
-					} 
-				}
+#ifndef NDEBUG 
+		printf("ioServer -> wintestmult value %i\n", wintestmult); 
 #endif 
+	}while(!wintestmult);  // test for completion of all windows 
+
+#ifndef NDEBUG 
+	printf("ioServer -> loop server exited \n"); 
+#endif 
+
+	// free windows and pointer 
+	// while freeing, check if there are any opened windows 
+	for(int i = 0; i < NUM_WIN; i++)
+	{
+		// wait for completion of all windows 
+		ierr = MPI_Win_wait(win_ptr[i]); 
+		error_check(ierr); 
+#ifdef IOBW
+		writeTime[i][loopCounter[i]] = MPI_Wtime(); 
+#endif 
+		fileWrite(array[i], arraysubsize, arraygsize, arraystart, NDIM, cartcomm, WRITEFILE[i], ioComm); 
+		// finish writing timer
+
+#ifdef IOBW
+		// finish write time 
+		writeTime[i][loopCounter[i]] = MPI_Wtime() - writeTime[i][loopCounter[i]]; 
+		// finish winTime 
+		winTime[i][loopCounter[i]] = MPI_Wtime() - winTime[i][loopCounter[i]];   
+#endif 
+#ifndef NDEBUG 
+		printf("MPI win free IO server reached\n"); 
+#endif 
+		ierr = MPI_Win_free(&win_ptr[i]);
+		error_check(ierr); 
 	} 
+
+#ifdef IOBW
+	// print out timers by reducing all the variables to get the maximum value 
+	FILE* out;
+	// initialise file object 
+	if(!ioRank)
+	{
+		int test = remove(FILENAME);
+		out = fopen(FILENAME, "w+");
+		if (out == NULL)
+		{
+			printf("Error: No output file\n");
+			exit(1);
+		}
+		// header for print statements
+		fprintf(out,"Window Number, Window Time, Write Time, IO BW \n"); 
+	} 
+
+	// MPI reduction of writeTime array over all IO ranks 
+	for(int i = 0; i < NUM_WIN; i++)
+	{
+		MPI_Reduce(writeTime[i], writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
+		MPI_Reduce(winTime[i], winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioComm); 
+	}
+
+	// calculate file size for B/W calculation 
+	fileSize = 1; 
+	for(int i = 0; i < NDIM; i++)
+	{
+		fileSize *= arraysubsize[i]; 
+	}
+	
+	// ioRank = 0 writes to file 
+	if(!ioRank)
+	{
+		for(int j = 0; j < AVGLOOPCOUNT; j ++)
+		{
+			for(int i = 0; i < NUM_WIN; i++)
+			{
+				fprintf(out,"%i,%.3f, %.3f, %.3f \n",i,winTime_max[i][j],writeTime_max[i][j],fileSize/writeTime_max[i][j]); 
+			} 
+		} 
+	}
+#endif 
+} 
