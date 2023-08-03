@@ -16,7 +16,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// allocate windows 
 	double* array[NUM_WIN]; 
 	MPI_Win win_ptr[NUM_WIN]; 
-	int flag[NUM_WIN]; 	
 	int ierr; 
 	int soi = sizeof(double); 
 
@@ -124,6 +123,13 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		}
 	}
 #endif 
+	
+	// initialise flag variable to test for window completion
+	int flag[NUM_WIN]; 	
+	for(int i = 0; i< NUM_WIN; i++)
+	{
+		flag[i] = 0; 
+	} 
 	// Test for window completion 
 	do 
 	{
@@ -137,7 +143,13 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		{
 			if(wintestflags[i] > WIN_DEACTIVATE) // anything over 0 means go for printing 
 			{
-				if(wintestflags[i]==WIN_WAIT) // in this case WIN WAIT is coming before WIN POST, but it assumes that WIN POST has been called before. 
+				/* 
+				 * in this case WIN WAIT is coming before WIN POST, but it assumes that 
+				 * WIN POST has been called before.
+				 * test for flag = 0 checks if window has been written before to avoid
+				 * overwriting, IF win_test completes the window
+				 */ 
+				if(wintestflags[i]==WIN_WAIT && flag[i]==0)  
 				{
 #ifndef NDEBUG 
 					printf("ioServer -> flag negative and win wait implemented\n"); 
