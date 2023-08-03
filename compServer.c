@@ -305,11 +305,11 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 			exit(1);
 		}
 		// header for compute output 
-	  fprintf(out,"Function,Best Rate MB/s,Avg time,Min time,Max time,Max Wall time\n");
+	  fprintf(out,"Function,Best_Rate(GB/s),Avg_time(s),Min_time(s),Max_time(s),Max_Walltime(s)\n");
 
     for (int i=0; i<NUM_KERNELS; i++) {
 			fprintf(out,"%s,%lf,%lf,%lf,%lf,\n", STREAM_kernels[i],
-	       1.0E-06 * bytes[i]/minTime[i],
+	       1.0E-09 * bytes[i]/minTime[i],
 	       compTimer_avg[i],
 	       minTime[i],
 	       maxTime[i]);

@@ -254,15 +254,14 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// ioRank = 0 writes to file 
 	if(!ioRank)
 	{
-		double iobw; 
 		for(int j = 0; j < AVGLOOPCOUNT; j ++)
 		{
 			for(int i = 0; i < NUM_WIN; i++)
 			{
 				if(ioParams.writeTime_max[i][j] > 0.0)
 				{
-					iobw = ioParams.fileSize/(ioParams.writeTime_max[i][j] * pow(10,9)); // GB/s  
-					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],iobw); 
+					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],
+					(1.0E-09*ioParams.fileSize/ioParams.writeTime_max[i][j]) ); 
 				} 
 			} 
 		} 
