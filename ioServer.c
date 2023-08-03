@@ -257,7 +257,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		{
 			for(int i = 0; i < NUM_WIN; i++)
 			{
-				fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],ioParams.fileSize/ioParams.writeTime_max[i][j]); 
+				if(ioParams.writeTime_max[i][j] > 0.0)
+				{
+					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],ioParams.fileSize/ioParams.writeTime_max[i][j]); 
+				} 
 			} 
 		} 
 	}
