@@ -8,6 +8,7 @@
 #include <stdlib.h>  
 #include <string.h> 
 #include <assert.h> 
+#include <math.h>
 #include "stream_post_ioserver.h"
 #define FILENAME "ioserver_output.csv"
 
