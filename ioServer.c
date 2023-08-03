@@ -244,7 +244,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	}
 
 	// calculate file size for B/W calculation 
-	ioParams.fileSize = 1; 
+	ioParams.fileSize = sizeof(double); 
 	for(int i = 0; i < NDIM; i++)
 	{
 		ioParams.fileSize *= ioParams.arraysubsize[i]; 
@@ -253,13 +253,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	// ioRank = 0 writes to file 
 	if(!ioRank)
 	{
+		double iobw; 
 		for(int j = 0; j < AVGLOOPCOUNT; j ++)
 		{
 			for(int i = 0; i < NUM_WIN; i++)
 			{
 				if(ioParams.writeTime_max[i][j] > 0.0)
 				{
-					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],ioParams.fileSize/ioParams.writeTime_max[i][j]); 
+					iobw = ioParams.fileSize/(ioParams.writeTime_max[i][j] * pow(10,9)); // GB/s  
+					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],iobw); 
 				} 
 			} 
 		} 
