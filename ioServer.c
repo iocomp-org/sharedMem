@@ -234,7 +234,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 			exit(1);
 		}
 		// header for print statements
-		fprintf(out,"Window_Number,Window_Time,Write_Time,IO_BW \n"); 
+		fprintf(out,"Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
 	} 
 
 	// MPI reduction of writeTime array over all IO ranks 
