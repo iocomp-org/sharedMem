@@ -1,7 +1,7 @@
 #!/bin/bash --login
 #SBATCH --job-name=stream
 #SBATCH --nodes=1
-#SBATCH --tasks-per-node=1
+#SBATCH --tasks-per-node=128
 #SBATCH --cpus-per-task=1
 #SBATCH --time=00:05:00
 #SBATCH --account=e609
@@ -22,9 +22,8 @@ export PPN=${SLURM_NTASKS_PER_NODE}
 export OMP_NUM_THREADS=1
 
 # for command line arguments 
-N=10**6
 io=1
-FILESIZE=$((${N}*8/10**6))
+FILESIZE=$((${N}*8/2**20))
 IOLIB=("MPIIO" "HDF5") 
 
 # <path>/ioLibrary/Filesize(MB) 
@@ -37,7 +36,7 @@ cd ${RUNDIR}
 export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 
 echo "Job started " $(date +"%T") # start time 
-
+echo "N" ${N} "IO" ${io} "FILESIZE" ${FILESIZE}MiB
 srun ${EXE} --N ${N} --io ${io}
 
 wait 
