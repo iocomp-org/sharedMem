@@ -20,7 +20,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 	int ierr; 
 	int soi = sizeof(double); 
 
+	// initialise IO Params structure 
 	struct params ioParams; 
+	ioParams.ioComm = ioComm; 
+	ioParams.ioLibNum = IOLIBNUM; 
 
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize,  
@@ -36,7 +39,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		coords[i] = 0; 
 		periods[i] = 0; 
 	}
-	ioParams.ioComm = ioComm; 
 	MPI_Comm_rank(ioParams.ioComm, &ioRank); 
 	MPI_Comm_size(ioParams.ioComm, &ioSize); 
 
@@ -152,7 +154,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 				 */ 
 				if(wintestflags[i]==WIN_WAIT && flag[i]==0)  
 				{
-					printf("ioServer window:%i flag negative and win wait implemented\n", i); 
 #ifndef NDEBUG 
 					printf("ioServer window:%i flag negative and win wait implemented\n", i); 
 #endif 
@@ -166,24 +167,21 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
-				printf("ioServer window:%i MPI post \n", i); 
+				printf("ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
 #endif 
 #ifdef IOBW	
-				printf("ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
 				ioParams.winTime_start[i] = MPI_Wtime();
 #endif 
 
 				// test for window completion 	
 				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
 				error_check(ierr);
-				printf("ioServer window:%i win test\n",i); 
 #ifndef NDEBUG 
 				printf("ioServer window:%i win test\n",i); 
 #endif 
 				// if window is available to print then print and end timer 
 				if(flag[i])
 				{
-					printf("ioServer window:%i flag positive \n",i); 
 #ifndef NDEBUG 
 					printf("ioServer window:%i flag positive \n",i); 
 #endif
@@ -215,7 +213,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
 		fileWrite(&ioParams, array[i], loopCounter, i); 
-		printf("ioServer window:%i win wait reached\n",i); 
 #ifndef NDEBUG 
 		printf("ioServer window:%i win wait reached\n",i); 
 #endif 
