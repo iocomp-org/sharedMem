@@ -22,14 +22,14 @@
 #include <assert.h> 
 #include "stream_post_ioserver.h"
 
-void printData(int* recv)
-{
-	for(int i = 0; i < N; i++)
-	{
-		printf("%i ", recv[i]); 
-	}
-	printf("\n"); 
-} 
+//void printData(int* recv)
+//{
+//	for(int i = 0; i < N; i++)
+//	{
+//		printf("%i ", recv[i]); 
+//	}
+//	printf("\n"); 
+//} 
 
 /* 
  * function recieves pointer array, copies this into allocated shared memory
@@ -72,7 +72,6 @@ void dataSendComplete(MPI_Win win)
 } 
 
 
-
 int main(int argc, char** argv)
 {
 	//skipped initialization above
@@ -83,10 +82,18 @@ int main(int argc, char** argv)
 	int globalRank, globalSize, colour; 
 	MPI_Comm_rank(MPI_COMM_WORLD,&globalRank); 
 	MPI_Comm_size(MPI_COMM_WORLD,&globalSize); 
-	MPI_Comm newComm; 
+	MPI_Comm newComm;
+	
+	// command line interactions to set the problem size and the IO library number  
+	struct params ioParams; 
+	initialise(argc, argv, &ioParams); 
+	
+	// brief hello world to check parameters 
 	if(!globalRank)
 	{
-		printf("Shared memory program demonstrator with size %i \n", globalSize); 
+		double problemSize = ioParams.N*8*1.0E-06; // MB 
+		printf("Shared memory demonstrator with problem size=%lfMB, number of windows=%i, number of ranks=%i, I/O library=%i\n", 
+		problemSize, NUM_WIN, globalSize, ioParams.ioLibNum); 
 	} 
 
 	/*
@@ -142,11 +149,11 @@ int main(int argc, char** argv)
 	// initialise windows for each array in both Compute and I/O process
 	if(newRank == 0)
 	{
-		compServer(computeComm, newComm, MPI_COMM_WORLD); 
+		compServer(computeComm, newComm, MPI_COMM_WORLD, &ioParams); 
 	} 
 	else 
 	{
-		ioServer(ioComm, newComm); 
+		ioServer(ioComm, newComm,&ioParams); 
 	} 
 
 	MPI_Finalize();

@@ -16,7 +16,6 @@
 #define AVGLOOPCOUNT 2
 
 // define problem size and dimension of data 
-#define N 1000000
 #define NDIM 1
 
 // define window control integers 
@@ -56,10 +55,11 @@ struct params
 	int localDataSize; 
 	// select I/O library 
 	int ioLibNum; 
-
+	// select problem size 
+	int N; 
 	// filenames 
 	char WRITEFILE[NUM_WIN][10]; 
-	
+
 	// timer variables
 	// winTime measures the time taken from issuing of the win start to win wait 
 	// writeTime measures the time taken for file write to complete 
@@ -78,7 +78,6 @@ struct params
 
 }; 
 extern struct iocomp_params iocompParams; 
-void initialise(int* array,int value); 
 void printData(int* recv); 
 // void dataSend(int len, MPI_Comm newComm, int* values); 
 MPI_Win dataSend(int len, MPI_Comm newComm, int* values); 
@@ -87,10 +86,11 @@ void ioProcess(MPI_Comm newComm);
 MPI_Win createWindow(int len, MPI_Comm newComm, int* array); 
 struct winElements winAlloc(int len, MPI_Comm newComm);  
 // void ioServer(MPI_Comm newComm, MPI_Win win_ptr[NUM_WIN], int* array[NUM_WIN]); 
-void ioServer(MPI_Comm ioComm, MPI_Comm newComm); 
+void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams); 
 void ioServerWrite(char* WRITEFILE, int* array, int elementsNum); 
 void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
 void mpiRead(char* FILENAME, MPI_Comm ioServerComm ); 
 void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
-void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm); 
+void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 
+void initialise(int argc, char** argv, struct params *ioParams); 
