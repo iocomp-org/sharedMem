@@ -152,8 +152,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 				 */ 
 				if(wintestflags[i]==WIN_WAIT && flag[i]==0)  
 				{
+					printf("ioServer window:%i flag negative and win wait implemented\n", i); 
 #ifndef NDEBUG 
-					printf("ioServer -> flag negative and win wait implemented\n"); 
+					printf("ioServer window:%i flag negative and win wait implemented\n", i); 
 #endif 
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
@@ -165,25 +166,26 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
-				printf("ioServer -> post MPI post for window %i \n", i); 
+				printf("ioServer window:%i MPI post \n", i); 
 #endif 
 #ifdef IOBW	
-				// start loopCounter after posting winPost 
-				loopCounter[i]++; 
-				ioParams.winTime[i][loopCounter[i]] = MPI_Wtime();
+				printf("ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
+				ioParams.winTime_start[i] = MPI_Wtime();
 #endif 
 
 				// test for window completion 	
 				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
 				error_check(ierr);
+				printf("ioServer window:%i win test\n",i); 
 #ifndef NDEBUG 
-				printf("ioServer -> win test\n"); 
+				printf("ioServer window:%i win test\n",i); 
 #endif 
 				// if window is available to print then print and end timer 
 				if(flag[i])
 				{
+					printf("ioServer window:%i flag positive \n",i); 
 #ifndef NDEBUG 
-					printf("ioServer -> flag positive \n"); 
+					printf("ioServer window:%i flag positive \n",i); 
 #endif
 					fileWrite(&ioParams, array[i], loopCounter, i); 
 				}
@@ -213,8 +215,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 		ierr = MPI_Win_wait(win_ptr[i]); 
 		error_check(ierr); 
 		fileWrite(&ioParams, array[i], loopCounter, i); 
+		printf("ioServer window:%i win wait reached\n",i); 
 #ifndef NDEBUG 
-		printf("MPI win free IO server reached\n"); 
+		printf("ioServer window:%i win wait reached\n",i); 
 #endif 
 		ierr = MPI_Win_free(&win_ptr[i]);
 		error_check(ierr); 
@@ -234,7 +237,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 			exit(1);
 		}
 		// header for print statements
-		fprintf(out,"Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
+		fprintf(out,"Loop_number,Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
 	} 
 
 	// MPI reduction of writeTime array over all IO ranks 
@@ -260,7 +263,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm)
 			{
 				if(ioParams.writeTime_max[i][j] > 0.0)
 				{
-					fprintf(out,"%i,%.3f,%.3f,%.3f \n",i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],
+					fprintf(out,"%i,%i,%.3f,%.3f,%.3f \n",j,i,ioParams.winTime_max[i][j],ioParams.writeTime_max[i][j],
 					(1.0E-09*ioParams.fileSize/ioParams.writeTime_max[i][j]) ); 
 				} 
 			} 

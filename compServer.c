@@ -230,7 +230,6 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm)
 #ifndef NDEBUG 
 		printf("compServer -> After mpi complete for A \n"); 
 #endif 
-
 	} 
 
 	// send message to ioServer to free the windows and exit the recv loop
