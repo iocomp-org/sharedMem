@@ -46,10 +46,13 @@ struct winElements {
 struct params 
 {
 	// for io_libraries function 
-	// int NDIM; 
+	// array description variables 
 	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
+	// global and local data sizes in Bytes 
 	int globalDataSize; 
 	int localDataSize; 
+	// select I/O library 
+	int ioLibNum; 
 
 	// filenames 
 	char WRITEFILE[NUM_WIN][10]; 
