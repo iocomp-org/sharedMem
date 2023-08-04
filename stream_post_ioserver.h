@@ -13,10 +13,10 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 10
+#define AVGLOOPCOUNT 2
 
 // define problem size and dimension of data 
-#define N 1000
+#define N 10000000
 #define NDIM 1
 
 // define window control integers 
@@ -57,6 +57,10 @@ struct params
 	// timer variables
 	// winTime measures the time taken from issuing of the win start to win wait 
 	// writeTime measures the time taken for file write to complete 
+	double winTime_start[NUM_WIN]; 
+	double winTime_end[NUM_WIN]; 
+	double writeTime_start; 
+	double writeTime_end; 
 	double winTime[NUM_WIN][AVGLOOPCOUNT]; 
 	double winTime_max[NUM_WIN][AVGLOOPCOUNT]; 
 	double writeTime[NUM_WIN][AVGLOOPCOUNT]; 
