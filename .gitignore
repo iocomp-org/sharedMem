@@ -1,6 +1,7 @@
 *.dat 
 *.csv 
 Object_files/*
+OUTPUT/*
 *.swp 
 *.out 
 *.err
