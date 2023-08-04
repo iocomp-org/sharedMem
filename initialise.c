@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h> 
+#include <assert.h>
 #include "stream_post_ioserver.h"
 
 void initialise(int argc, char** argv, struct params *ioParams)
@@ -28,9 +29,12 @@ void initialise(int argc, char** argv, struct params *ioParams)
 		{
 			case 'a':
 				ioParams->N = atoi(optarg); 
+				assert(ioParams->N > 0) ;
 
 			case 'b':
 				ioParams->ioLibNum = atoi(optarg); 
+				assert(ioParams->ioLibNum > 0) ;
+				assert(ioParams->ioLibNum < 2) ;
 
 			case '?':
 				/* getopt_long already printed an error message. */
