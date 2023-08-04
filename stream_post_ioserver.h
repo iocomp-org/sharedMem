@@ -16,7 +16,7 @@
 #define AVGLOOPCOUNT 2
 
 // define problem size and dimension of data 
-#define N 10000000
+#define N 1000000
 #define NDIM 1
 
 // define window control integers 
