@@ -11,7 +11,7 @@ DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = main.c ioServer.c compServer.c mpiWrite.c mpiRead.c  fileWrite.c hdf5Write.c
+SRCS = main.c ioServer.c compServer.c initialise.c  mpiWrite.c   fileWrite.c hdf5Write.c #mpiRead.c
 
 _OBJS = $(SRCS:.c=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
