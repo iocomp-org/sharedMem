@@ -1,2 +1,7 @@
 *.dat 
 *.csv 
+Object_files/*
+*.swp 
+*.out 
+*.err
+sharedmem
