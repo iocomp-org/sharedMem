@@ -84,11 +84,10 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD,&globalRank); 
 	MPI_Comm_size(MPI_COMM_WORLD,&globalSize); 
 	MPI_Comm newComm; 
-
-#ifndef NDEBUG 
-	printf("Hello world from rank %i and size %i \n", globalRank, globalSize); 
-#endif 
-
+	if(!globalRank)
+	{
+		printf("Shared memory program demonstrator with size %i \n", globalSize); 
+	} 
 
 	/*
 	 * Assuming IO process and Compute Process are mapped to physical and SMT cores
@@ -121,12 +120,23 @@ int main(int argc, char** argv)
 		colour = 0; 
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &computeComm );
 		MPI_Comm_rank(computeComm, &computeRank); 
+		MPI_Comm_size(computeComm, &computeSize); 
+		if(!computeRank)
+		{
+			printf("Compute ranks have size %i \n", computeSize); 
+		}
+
 	}
 	else
 	{
 		colour = 1; 
 		MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &ioComm );
 		MPI_Comm_rank(ioComm, &ioRank); 
+		MPI_Comm_size(ioComm, &ioSize); 
+		if(!ioRank)
+		{
+			printf("IO ranks have size %i \n", ioSize); 
+		}
 	}
 
 	// initialise windows for each array in both Compute and I/O process

@@ -34,6 +34,9 @@
 #define SCALAR 5 
 #define STARTING_VAL 1
 
+// select iolibrary; 0 = MPIIO, 1 = HDF5 
+#define IOLIBNUM 1 
+
 #define error_check(ierr) if(ierr!=MPI_SUCCESS){ printf("mpi error \n"); exit(1);  }  
 
 struct winElements {
