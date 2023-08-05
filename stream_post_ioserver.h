@@ -94,3 +94,4 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 
 void initialise(int argc, char** argv, struct params *ioParams); 
+void deleteFiles(struct params* iocompParams, int windowNum); 

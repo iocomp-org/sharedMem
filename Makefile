@@ -1,4 +1,4 @@
-CC=cc
+CC=mpicc.mpich 
 CFLAGS=-fPIC -g -DNDEBUG -DIOBW 
 
 ODIR = Object_files

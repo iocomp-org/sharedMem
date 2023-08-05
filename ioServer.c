@@ -217,6 +217,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #endif 
 				ierr = MPI_Win_free(&win_ptr[i]);
 				error_check(ierr); 
+				// delete file 
+#ifndef NODELETE
+				deleteFiles(ioParams, i); 
+#endif 
 			} 
 
 #ifdef IOBW
@@ -250,7 +254,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				ioParams->fileSize *= ioParams->arraysubsize[i]; 
 			}
 
-			// ioRank = 0 writes to file and deletes output files  
+			// ioRank = 0 writes stats to output file 
 			if(!ioRank)
 			{
 				for(int j = 0; j < AVGLOOPCOUNT; j ++)
@@ -264,11 +268,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 						} 
 					} 
 				} 
-
-				// delete file 
-#ifndef NODELETE
-				deleteFiles(&ioParams); 
-#endif 
 			}
 #endif 
 } 
