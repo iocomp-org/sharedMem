@@ -20,6 +20,7 @@
 #include <stdlib.h>  
 #include <string.h> 
 #include <assert.h> 
+#include <math.h> 
 #include "stream_post_ioserver.h"
 
 //void printData(int* recv)
@@ -91,8 +92,8 @@ int main(int argc, char** argv)
 	// brief hello world to check parameters 
 	if(!globalRank)
 	{
-		double problemSize = ioParams.N*8*1.0E-06; // MB 
-		printf("Shared memory demonstrator with problem size=%lfMB, number of windows=%i, number of ranks=%i, I/O library=%i\n", 
+		double problemSize = ioParams.N*8/(pow(2,20)); // MiB 
+		printf("Shared memory demonstrator with problem size=%lfMiB, number of windows=%i, number of ranks=%i, I/O library=%i\n", 
 		problemSize, NUM_WIN, globalSize, ioParams.ioLibNum); 
 	} 
 
