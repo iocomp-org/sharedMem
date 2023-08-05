@@ -1,5 +1,5 @@
 CC=mpicc.mpich 
-CFLAGS=-fPIC -g -DNDEBUG -DIOBW 
+CFLAGS=-fPIC -g -DNDEBUG -DIOBW #-DNODELETE
 
 ODIR = Object_files
 
