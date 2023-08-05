@@ -23,7 +23,11 @@ export PPN=${SLURM_NTASKS_PER_NODE}
 export OMP_NUM_THREADS=1
 
 # for command line arguments 
-N=$((2**22))
+if [[ -z ${N} ]]; 
+then 
+  echo "N is not set"
+  N=$((2**22))
+fi 
 io=1
 FILESIZE=$((${N}*8/2**20))
 IOLIB=("MPIIO" "HDF5") 
