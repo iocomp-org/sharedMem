@@ -93,7 +93,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	for(int i = 0; i < ioParams->N; i++)
 	{
 		// a[i] = STARTING_VAL;  
-		a[i] = i + ((globalRank)*ioParams->N); 
+		// a[i] = i + ((globalRank)*ioParams->N); 
+		a[i] = 1; 
 	}
 	MPI_Win_complete(win_A);
 #ifndef NDEBUG 
