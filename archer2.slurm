@@ -11,6 +11,7 @@
 # GNU 
 module swap PrgEnv-cray PrgEnv-gnu
 module use /work/y07/shared/archer2-lmod/dev
+module load valgrind4hpc 
 #module swap craype-network-ofi craype-network-ucx 
 #module swap cray-mpich cray-mpich-ucx 
 
@@ -22,6 +23,7 @@ export PPN=${SLURM_NTASKS_PER_NODE}
 export OMP_NUM_THREADS=1
 
 # for command line arguments 
+N=$((2**22))
 io=1
 FILESIZE=$((${N}*8/2**20))
 IOLIB=("MPIIO" "HDF5") 
@@ -37,10 +39,13 @@ export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 
 echo "Job started " $(date +"%T") # start time 
 echo "N" ${N} "IO" ${io} "FILESIZE" ${FILESIZE}MiB
-srun ${EXE} --N ${N} --io ${io}
+
+srun ${EXE} --N ${N} --io ${io} > test.out 
 
 wait 
 
-echo $(module list) 
+module list  2>&1 | tee -a test.out
+echo "JOB ID"  $SLURM_JOBID >> test.out
+echo "JOB NAME" ${SLURM_JOB_NAME} >> test.out
 
 echo "Job ended " $(date +"%T") # end time 
