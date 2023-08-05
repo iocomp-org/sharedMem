@@ -262,13 +262,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 			} 
 		} 
 
-		// delete file 
-#ifndef NODELETE
-		for(int i = 0; i < NUM_WIN; i++)
-		{
-			deleteFiles(ioParams, i); 
-		} 
-#endif 
 	}
 #endif 
 } 
