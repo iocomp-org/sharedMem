@@ -85,6 +85,10 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD,&globalSize); 
 	MPI_Comm newComm;
 	
+	// for splitting of communicators, MPI size needs to be greater than 1 
+	assert(globalSize%2==0); 
+	assert(globalSize>1); 
+	
 	// command line interactions to set the problem size and the IO library number  
 	struct params ioParams; 
 	initialise(argc, argv, &ioParams); 
