@@ -313,6 +313,6 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	       minTime[i],
 	       maxTime[i]);
     }
-		fprintf(out,",,,,,%lf \n", wallTime_max); 
+		fprintf(out,"WALL,,,,,%lf \n", wallTime_max); 
 	}
 } 
