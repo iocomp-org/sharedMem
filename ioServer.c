@@ -242,7 +242,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	}
 #endif 
 
-	// delete file 
+#ifdef VERIFY
+	verify(ioParams); 
+#endif
+
 #ifndef NODELETE
 	deleteFiles(ioParams); 
 #endif 

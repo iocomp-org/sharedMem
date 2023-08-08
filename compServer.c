@@ -166,7 +166,14 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 		for(int i = 0; i < ioParams->localDataSize; i++)
 		{
-			b[i] = SCALAR * c[i]; 
+			if(iter > 0)
+			{
+				b[i] = SCALAR * c[i]; 
+			} 
+			else
+			{
+				b[i] = SCALAR; 
+			} 
 		}
 
 		MPI_Win_complete(win_B); 
