@@ -9,12 +9,13 @@
 
 void initialise(int argc, char** argv, struct params *ioParams)
 {
+	// command line options for local data size and i/o number 
 	for(int i = 0; i < argc; i++)
 	{
 		if(strcmp(argv[i],"--N") == 0)
 		{
-			ioParams->N = atoi(argv[i+1]); 
-			printf("N is %i \n", ioParams->N); 
+			ioParams->localDataSize = atoi(argv[i+1]); 
+			printf("N is %i \n", ioParams->localDataSize); 
 		}
 		else if(strcmp(argv[i],"--io") == 0)
 		{
@@ -22,8 +23,10 @@ void initialise(int argc, char** argv, struct params *ioParams)
 			printf("iolib num is %i \n", ioParams->ioLibNum); 
 		}
 	} 
-	assert(ioParams->N > 0) ;
+	assert(ioParams->localDataSize > 0) ;
 	assert(ioParams->ioLibNum > -1) ;
 	assert(ioParams->ioLibNum < 2) ;
+
+
 } 
 

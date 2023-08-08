@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 	// brief hello world to check parameters 
 	if(!globalRank)
 	{
-		double problemSize = ioParams.N*8/(pow(2,20)); // MiB 
+		double problemSize = ioParams.localDataSize*8/(pow(2,20)); // MiB 
 		printf("Shared memory demonstrator with problem size=%lfMiB, number of windows=%i, number of ranks=%i, I/O library=%i\n", 
 		problemSize, NUM_WIN, globalSize, ioParams.ioLibNum); 
 	} 

@@ -51,17 +51,17 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	double* c;  
 	struct winElements outputWin; 
 	// a array 
-	outputWin = winAlloc(ioParams->N, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm); 
 	win_A = outputWin.win; 
 	a = outputWin.array; 
 
 	// c array 
-	outputWin = winAlloc(ioParams->N, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm); 
 	win_C = outputWin.win; 
 	c = outputWin.array; 
 
 	// b array 
-	outputWin = winAlloc(ioParams->N, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm); 
 	win_B = outputWin.win; 
 	b = outputWin.array; 
 
@@ -90,9 +90,9 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 #ifndef NDEBUG 
 	printf("compServer -> MPI window start with global rank %i \n", globalRank); 
 #endif 
-	for(int i = 0; i < ioParams->N; i++)
+	for(int i = 0; i < ioParams->localDataSize; i++)
 	{
-		// a[i] = i + ((globalRank)*ioParams->N); 
+		// a[i] = i + ((globalRank)*ioParams->localDataSize); 
 		a[i] = STARTING_VAL; 
 	}
 	MPI_Win_complete(win_A);
@@ -130,7 +130,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 //		printf("compServer -> After win start for C \n"); 
 //#endif 
 //
-//		for(int i = 0; i < ioParams->N; i++)
+//		for(int i = 0; i < ioParams->localDataSize; i++)
 //		{
 //			c[i] = a[i]; 
 //		}
@@ -164,7 +164,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		printf("compServer -> After win start for B\n"); 
 #endif 
 
-		for(int i = 0; i < ioParams->N; i++)
+		for(int i = 0; i < ioParams->localDataSize; i++)
 		{
 			b[i] = SCALAR * c[i]; 
 		}
@@ -198,7 +198,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		printf("compServer -> After win start for C \n"); 
 #endif 
 
-		for(int i = 0; i < ioParams->N; i++)
+		for(int i = 0; i < ioParams->localDataSize; i++)
 		{
 			c[i] = a[i] + b[i]; 
 		}
@@ -227,7 +227,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		printf("compServer -> After mpi complete for A \n"); 
 #endif 
 
-		for(int i = 0; i < ioParams->N; i++)
+		for(int i = 0; i < ioParams->localDataSize; i++)
 		{
 			a[i] = b[i] + SCALAR*c[i]; 
 		}
@@ -275,10 +275,10 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
 		// stream data size used in different kernels 
 		double bytes[NUM_KERNELS]; 
-		bytes[COPY]			= 2*ioParams->N*sizeof(double); 
-		bytes[SCALE]		= 2*ioParams->N*sizeof(double); 
-		bytes[ADD]			= 3*ioParams->N*sizeof(double); 
-		bytes[TRIAD]		= 3*ioParams->N*sizeof(double); 
+		bytes[COPY]			= 2*ioParams->localDataSize*sizeof(double); 
+		bytes[SCALE]		= 2*ioParams->localDataSize*sizeof(double); 
+		bytes[ADD]			= 3*ioParams->localDataSize*sizeof(double); 
+		bytes[TRIAD]		= 3*ioParams->localDataSize*sizeof(double); 
 
 
 		// calculate max, min, avg across loops across ranks. 
