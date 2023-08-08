@@ -7,7 +7,7 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	printf("fileWrite->Before writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n",windowNum, 
 	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
-#endif 
+#endif
 
 	// convert size_t array parameters to int arrays using MPI and HDF5 
 	int localArray[NDIM]; 
@@ -24,10 +24,10 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	switch(ioParams->ioLibNum)
 	{
 		case(0): 
-			mpiiowrite(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum]); 
+			mpiiowrite(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]]); 
 			break; 
 		case(1): 
-			phdf5write(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum]); 
+			phdf5write(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]]); 
 			break; 
 		default:
 			printf("Invalid io number"); 

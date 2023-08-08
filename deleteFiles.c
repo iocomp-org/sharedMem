@@ -14,9 +14,9 @@ int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW
 }
 #pragma GCC diagnostic pop 
 
-void deleteFiles(struct params* iocompParams, int windowNum)
+void deleteFiles(struct params* iocompParams, int windowNum, int loopCounter)
 {
 	int ierr; 
-	ierr = nftw(iocompParams->WRITEFILE[windowNum], unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
+	ierr = nftw(iocompParams->WRITEFILE[windowNum][loopCounter], unlink_cb, 64, FTW_DEPTH | FTW_PHYS);
 	error_check(ierr); 
 } 

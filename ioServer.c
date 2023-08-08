@@ -57,7 +57,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 		printf("ioServer -> MPI allocatedioParams-> windows %i \n", i); 
 #endif 
-		fileNameInit(ioParams, i); 
 	} 
 
 	// allocate arrays using window pointers 
@@ -251,12 +250,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	{
 		for(int i = 0; i < NUM_WIN; i++)
 		{
-			test = remove(ioParams->WRITEFILE[i]);  
-			if(test)
+			for(int j = 0; j < AVGLOOPCOUNT; j++)
 			{
-				printf("File %s not deleted \n", ioParams->WRITEFILE[i]); 
+				test = remove(ioParams->WRITEFILE[i]);  
+				if(test)
+				{
+					printf("File %s not deleted \n", ioParams->WRITEFILE[i]); 
+				} 
+				// deleteFiles(&ioParams, i); 
 			} 
-			// deleteFiles(&ioParams, i); 
 		} 
 	} 
 #endif 

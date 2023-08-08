@@ -13,7 +13,7 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 1
+#define AVGLOOPCOUNT 2
 
 // define problem size and dimension of data 
 #define NDIM 2
@@ -56,7 +56,7 @@ struct params
 	// select I/O library 
 	int ioLibNum; 
 	// filenames 
-	char WRITEFILE[NUM_WIN][10]; 
+	char WRITEFILE[NUM_WIN][AVGLOOPCOUNT][100]; 
 
 	// timer variables
 	// winTime measures the time taken from issuing of the win start to win wait 
@@ -92,6 +92,6 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 
 void initialise(int argc, char** argv, struct params *ioParams); 
-void deleteFiles(struct params* iocompParams, int windowNum); 
+void deleteFiles(struct params* iocompParams, int windowNum, int loopCounter); 
 void arrayParamsInit(struct params *iocompParams); 
-void fileNameInit(struct params* ioParams, int windowNum); 
+void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100]); 

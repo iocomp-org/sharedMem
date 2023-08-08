@@ -2,6 +2,7 @@
 *.csv 
 Object_files/*
 OUTPUT/*
+run_dir/*
 *.swp 
 *.out 
 *.err

@@ -92,6 +92,10 @@ int main(int argc, char** argv)
 	// command line interactions to set the problem size and the IO library number  
 	struct params ioParams; 
 	initialise(argc, argv, &ioParams); 
+
+	// input user given filenames for each window
+	char filenames[NUM_WIN][100] = {"WinA", "WinB", "WinC"}; 
+	fileNameInit(&ioParams, filenames); 
 	
 	// brief hello world to check parameters 
 	if(!globalRank)
