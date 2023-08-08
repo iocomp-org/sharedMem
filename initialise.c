@@ -24,7 +24,5 @@ void initialise(int argc, char** argv, struct params *ioParams)
 	assert(ioParams->localDataSize > 0) ;
 	assert(ioParams->ioLibNum > -1) ;
 	assert(ioParams->ioLibNum < 5) ;
-
-
 } 
 
