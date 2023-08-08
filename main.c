@@ -161,23 +161,6 @@ int main(int argc, char** argv)
 		ioServer(ioComm, newComm,&ioParams); 
 	} 
 	
-		// delete file 
-#ifndef NODELETE
-		MPI_Barrier(MPI_COMM_WORLD); 
-		int test; 
-		if(!ioRank)
-		{
-			for(int i = 0; i < NUM_WIN; i++)
-			{
-				test = remove(ioParams.WRITEFILE[i]);  
-				if(test)
-				{
-					printf("File not deleted \n"); 
-				} 
-				// deleteFiles(&ioParams, i); 
-			} 
-		} 
-#endif 
 	MPI_Finalize();
 
 	return 0;

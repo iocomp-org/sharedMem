@@ -264,4 +264,22 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 
 	}
 #endif 
+
+		// delete file 
+#ifndef NODELETE
+		MPI_Barrier(ioComm); 
+		int test; 
+		if(!ioRank)
+		{
+			for(int i = 0; i < NUM_WIN; i++)
+			{
+				test = remove(ioParams->WRITEFILE[i]);  
+				if(test)
+				{
+					printf("File %s not deleted \n", ioParams->WRITEFILE[i]); 
+				} 
+				// deleteFiles(&ioParams, i); 
+			} 
+		} 
+#endif 
 } 
