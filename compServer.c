@@ -106,40 +106,40 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 #ifndef NDEBUG 
 		printf("compServer -> LOOP number %i \n", iter+1); 
 #endif 
-		// COPY
-		// send message to ioServer to print via broadcast
-		wintestflags[WIN_A] = WIN_DEACTIVATE;  
-		// wait for C window from previous loop
-		if(iter > 0)
-		{
-			wintestflags[WIN_C] = WIN_WAIT; 
-		}
-		else
-		{
-			wintestflags[WIN_C] = WIN_ACTIVATE; 
-		}
-		wintestflags[WIN_B] = WIN_DEACTIVATE; 
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-#ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-#endif 
-
-		compTimer[COPY][iter] = MPI_Wtime();  
-		MPI_Win_start(group, 0, win_C); 
-#ifndef NDEBUG 
-		printf("compServer -> After win start for C \n"); 
-#endif 
-
-		for(int i = 0; i < ioParams->N; i++)
-		{
-			c[i] = a[i]; 
-		}
-
-		MPI_Win_complete(win_C); 
-		compTimer[COPY][iter] = MPI_Wtime() - compTimer[COPY][iter]; 
-#ifndef NDEBUG 
-		printf("compServer -> After mpi window unlock for C \n"); 
-#endif 
+//		// COPY
+//		// send message to ioServer to print via broadcast
+//		wintestflags[WIN_A] = WIN_DEACTIVATE;  
+//		// wait for C window from previous loop
+//		if(iter > 0)
+//		{
+//			wintestflags[WIN_C] = WIN_WAIT; 
+//		}
+//		else
+//		{
+//			wintestflags[WIN_C] = WIN_ACTIVATE; 
+//		}
+//		wintestflags[WIN_B] = WIN_DEACTIVATE; 
+//		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+//#ifndef NDEBUG 
+//		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+//#endif 
+//
+//		compTimer[COPY][iter] = MPI_Wtime();  
+//		MPI_Win_start(group, 0, win_C); 
+//#ifndef NDEBUG 
+//		printf("compServer -> After win start for C \n"); 
+//#endif 
+//
+//		for(int i = 0; i < ioParams->N; i++)
+//		{
+//			c[i] = a[i]; 
+//		}
+//
+//		MPI_Win_complete(win_C); 
+//		compTimer[COPY][iter] = MPI_Wtime() - compTimer[COPY][iter]; 
+//#ifndef NDEBUG 
+//		printf("compServer -> After mpi window unlock for C \n"); 
+//#endif 
 
 		// SCALE
 		// send message to ioServer to print via broadcast
@@ -178,7 +178,14 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// ADD 
 		// send message to ioServer to print via broadcast
 		wintestflags[WIN_A] = WIN_DEACTIVATE;  
-		wintestflags[WIN_C] = WIN_WAIT; 
+		if(iter > 0)
+		{
+			wintestflags[WIN_C] = WIN_WAIT; 
+		}
+		else
+		{
+			wintestflags[WIN_C] = WIN_ACTIVATE; 
+		}
 		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
@@ -306,7 +313,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// header for compute output 
 	  fprintf(out,"Function,Best_Rate(GB/s),Avg_time(s),Min_time(s),Max_time(s),Max_Walltime(s)\n");
 
-    for (int i=0; i<NUM_KERNELS; i++) {
+    for (int i=1; i<NUM_KERNELS; i++) {
 			fprintf(out,"%s,%lf,%lf,%lf,%lf,\n", STREAM_kernels[i],
 	       1.0E-09 * bytes[i]/minTime[i],
 	       compTimer_avg[i],
