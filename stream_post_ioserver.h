@@ -49,7 +49,7 @@ struct params
 {
 	// for io_libraries function 
 	// array description variables 
-	int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
+	size_t localArray[NDIM],	globalArray[NDIM], arrayStart[NDIM]; 
 	// global and local data sizes in Bytes 
 	int globalDataSize; 
 	int localDataSize; 
@@ -95,3 +95,5 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 
 void initialise(int argc, char** argv, struct params *ioParams); 
 void deleteFiles(struct params* iocompParams, int windowNum); 
+void arrayParamsInit(struct params *iocompParams); 
+void fileNameInit(struct params* ioParams, int windowNum); 

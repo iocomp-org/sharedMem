@@ -27,6 +27,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize, reorder = 0; 
 	int dims_mpi[NDIM], coords[NDIM], periods[NDIM];
+	int loopCounter[NUM_WIN]; 
 
 	// initialise dims, coords and periods
 	for(int i = 0; i < NDIM; i++)
@@ -46,17 +47,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	ierr = MPI_Cart_coords(ioParams->cartcomm, ioRank, NDIM, coords);
 	error_check(ierr);
 
-	// assign arrray size, subsize and global size 
-	// int arraysubsize[NDIM], arraygsize[NDIM], arraystart[NDIM]; 
-	for(int i = 0; i < NDIM; i++)
-	{
-		ioParams->arraysubsize[i] = ioParams->N; 
-		ioParams->arraygsize[i] = ioParams->N;
-		ioParams->arraystart[i] = 0; 
-	}
-	// first element of array start and size different 
-	ioParams->arraystart[0] = ioParams->N*ioRank;
-	ioParams->arraygsize[0] = ioParams->N*ioSize; 
+	arrayParamsInit(ioParams); 
 
 	// allocate shared windows 
 	for(int i = 0; i < NUM_WIN; i++)
@@ -66,18 +57,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 		printf("ioServer -> MPI allocatedioParams-> windows %i \n", i); 
 #endif 
-		// each window can write to its own file, initialise write file name for
-		// each window number 
-		int arrayNumInt = '0' + i; 
-		char arrayNumChar = (char) arrayNumInt; 
-		char arrayNumString[] = {arrayNumChar, '\0'}; 
-		strcpy(ioParams->WRITEFILE[i], arrayNumString); 
-		char EXT[] = ".dat"; 
-		// char EXT[] = "array.h5"; 
-		strcat(ioParams->WRITEFILE[i], EXT); 
-
-		// delete the previous files 
-		int test = remove(ioParams->WRITEFILE[i]);
+		fileNameInit(ioParams, i); 
 	} 
 
 	// allocate arrays using window pointers 
@@ -110,7 +90,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 
 #ifdef IOBW
 	// loopCounter to assign timers per loop iteration for each window
-	int loopCounter[NUM_WIN]; 
 	for(int i = 0 ; i < NUM_WIN; i ++)
 	{
 		loopCounter[i] = 0; 
@@ -156,7 +135,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
 					error_check(ierr); 
-					fileWrite(ioParams, array[i],loopCounter, i); 
+					fileWrite(ioParams, array[i], loopCounter, i); 
 				}
 
 				//	Post window for starting access to array 
@@ -244,7 +223,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	ioParams->fileSize = sizeof(double); 
 	for(int i = 0; i < NDIM; i++)
 	{
-		ioParams->fileSize *= ioParams->arraysubsize[i]; 
+		ioParams->fileSize *= ioParams->localArray[i]; 
 	}
 
 	// ioRank = 0 writes stats to output file 
@@ -261,25 +240,24 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				} 
 			} 
 		} 
-
 	}
 #endif 
 
-		// delete file 
+	// delete file 
 #ifndef NODELETE
-		MPI_Barrier(ioComm); 
-		int test; 
-		if(!ioRank)
+	MPI_Barrier(ioComm); 
+	int test; 
+	if(!ioRank)
+	{
+		for(int i = 0; i < NUM_WIN; i++)
 		{
-			for(int i = 0; i < NUM_WIN; i++)
+			test = remove(ioParams->WRITEFILE[i]);  
+			if(test)
 			{
-				test = remove(ioParams->WRITEFILE[i]);  
-				if(test)
-				{
-					printf("File %s not deleted \n", ioParams->WRITEFILE[i]); 
-				} 
-				// deleteFiles(&ioParams, i); 
+				printf("File %s not deleted \n", ioParams->WRITEFILE[i]); 
 			} 
+			// deleteFiles(&ioParams, i); 
 		} 
+	} 
 #endif 
 } 

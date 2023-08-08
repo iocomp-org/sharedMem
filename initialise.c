@@ -3,46 +3,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <getopt.h> 
+#include <string.h> 
 #include <assert.h>
 #include "stream_post_ioserver.h"
 
 void initialise(int argc, char** argv, struct params *ioParams)
 {
-	while (1)
+	for(int i = 0; i < argc; i++)
 	{
-		static struct option long_options[] =
+		if(strcmp(argv[i],"--N") == 0)
 		{
-			{"N",  required_argument, 0, 'a'}, 
-			{"io",  required_argument, 0, 'b'}, 
-			{0, 0}
-		};
-		/* getopt_long stores the option index here. */
-		int option_index = 0;
-
-		long int c = getopt_long (argc, argv, "a:b:",						long_options, &option_index);
-
-		/* Detect the end of the options. */
-		if (c == -1)
-			break;
-
-		switch (c)
-		{
-			case 'a':
-				ioParams->N = atoi(optarg); 
-				assert(ioParams->N > 0) ;
-
-			case 'b':
-				ioParams->ioLibNum = atoi(optarg); 
-				assert(ioParams->ioLibNum > 0) ;
-				assert(ioParams->ioLibNum < 2) ;
-
-			case '?':
-				/* getopt_long already printed an error message. */
-				break;
-
-			default:
-				abort ();
+			ioParams->N = atoi(argv[i+1]); 
+			printf("N is %i \n", ioParams->N); 
 		}
-	}
+		else if(strcmp(argv[i],"--io") == 0)
+		{
+			ioParams->ioLibNum = atoi(argv[i+1]); 
+			printf("iolib num is %i \n", ioParams->ioLibNum); 
+		}
+	} 
+	assert(ioParams->N > 0) ;
+	assert(ioParams->ioLibNum > -1) ;
+	assert(ioParams->ioLibNum < 2) ;
 } 
 
