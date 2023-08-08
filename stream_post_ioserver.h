@@ -50,13 +50,11 @@ struct params
 	// for io_libraries function 
 	// array description variables 
 	size_t localArray[NDIM],	globalArray[NDIM], arrayStart[NDIM]; 
-	// global and local data sizes in Bytes 
+	// problem size in number of elements 
 	int globalDataSize; 
 	int localDataSize; 
 	// select I/O library 
 	int ioLibNum; 
-	// select problem size 
-	int N; 
 	// filenames 
 	char WRITEFILE[NUM_WIN][10]; 
 

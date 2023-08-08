@@ -15,17 +15,15 @@ void initialise(int argc, char** argv, struct params *ioParams)
 		if(strcmp(argv[i],"--N") == 0)
 		{
 			ioParams->localDataSize = atoi(argv[i+1]); 
-			printf("N is %i \n", ioParams->localDataSize); 
 		}
 		else if(strcmp(argv[i],"--io") == 0)
 		{
 			ioParams->ioLibNum = atoi(argv[i+1]); 
-			printf("iolib num is %i \n", ioParams->ioLibNum); 
 		}
 	} 
 	assert(ioParams->localDataSize > 0) ;
 	assert(ioParams->ioLibNum > -1) ;
-	assert(ioParams->ioLibNum < 2) ;
+	assert(ioParams->ioLibNum < 5) ;
 
 
 } 
