@@ -22,7 +22,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 
 	// initialise IO Params structure 
 	ioParams->ioComm = ioComm; 
-	ioParams->ioLibNum = IOLIBNUM; 
 
 	// IO setup create cartesian communicators 	
 	int ioRank, ioSize, reorder = 0; 
@@ -243,7 +242,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #endif 
 
 #ifdef VERIFY
-	verify(ioParams); 
+	if(!ioRank)
+	{
+		verify(ioParams); 
+	} 
 #endif
 
 #ifndef NODELETE
