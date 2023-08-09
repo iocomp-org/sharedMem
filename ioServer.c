@@ -245,8 +245,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	MPI_Barrier(ioParams->ioComm); 
 	if(!ioRank)
 	{
-		verify(ioParams); 
-	} 
+		printf("Verification started \n"); 
+	}
+	verify(ioParams); 
 #endif
 
 #ifndef NODELETE
