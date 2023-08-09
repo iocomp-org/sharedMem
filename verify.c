@@ -16,7 +16,6 @@ void verify(struct params *ioParams)
 	a = 1.0;
 	b = 2.0; 
 	c = 0.0; 
-	printf("Verification started \n"); 
 	for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
 	{
 		
