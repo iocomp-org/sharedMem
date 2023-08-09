@@ -242,6 +242,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #endif 
 
 #ifdef VERIFY
+	MPI_Barrier(ioParams->ioComm); 
 	if(!ioRank)
 	{
 		verify(ioParams); 

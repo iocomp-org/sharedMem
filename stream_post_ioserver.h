@@ -13,7 +13,7 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 2
+#define AVGLOOPCOUNT 10
 
 // define problem size and dimension of data 
 #define NDIM 2
@@ -84,7 +84,7 @@ struct winElements winAlloc(int len, MPI_Comm newComm);
 void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams); 
 void ioServerWrite(char* WRITEFILE, int* array, int elementsNum); 
 void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
-void mpiRead(struct params *ioParams, int windowNum, int iter, int val); 
+void mpiRead(struct params *ioParams, int windowNum, int iter, double val); 
 void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME); 
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 

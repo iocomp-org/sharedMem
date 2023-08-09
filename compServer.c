@@ -79,26 +79,38 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 	// INITIALISE A
 	// send message to ioServer to print via broadcast
-	wintestflags[WIN_A] = WIN_ACTIVATE;  
-	wintestflags[WIN_C] = WIN_DEACTIVATE; 
-	wintestflags[WIN_B] = WIN_DEACTIVATE; 
-	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-#ifndef NDEBUG 
-	printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
-#endif 
-	MPI_Win_start(group, 0, win_A); 
-#ifndef NDEBUG 
-	printf("compServer -> MPI window start with global rank %i \n", globalRank); 
-#endif 
+//	wintestflags[WIN_A] = WIN_ACTIVATE;  
+//	wintestflags[WIN_C] = WIN_DEACTIVATE; 
+//	wintestflags[WIN_B] = WIN_DEACTIVATE; 
+//	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+//#ifndef NDEBUG 
+//	printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+//#endif 
+//	MPI_Win_start(group, 0, win_A); 
+//#ifndef NDEBUG 
+//	printf("compServer -> MPI window start with global rank %i \n", globalRank); 
+//#endif 
+//	for(int i = 0; i < ioParams->localDataSize; i++)
+//	{
+//		// a[i] = i + ((globalRank)*ioParams->localDataSize); 
+//		a[i] = STARTING_VAL; 
+//	}
+//	MPI_Win_complete(win_A);
+//		if(!computeRank)
+//		{
+//			printf("value of A = %lf \n", a[0]); 
+//		}
+//#ifndef NDEBUG 
+//	printf("compServer -> After mpi window unlock for A \n"); 
+//#endif 
+	
+	// initialise A, B, C
 	for(int i = 0; i < ioParams->localDataSize; i++)
 	{
-		// a[i] = i + ((globalRank)*ioParams->localDataSize); 
-		a[i] = STARTING_VAL; 
+		a[i] = 1.0; 
+		b[i] = 2.0; 
+		c[i] = 0.0; 
 	}
-	MPI_Win_complete(win_A);
-#ifndef NDEBUG 
-	printf("compServer -> After mpi window unlock for A \n"); 
-#endif 
 
 	/* Start STREAM loop */ 
 	for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
@@ -166,14 +178,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 		for(int i = 0; i < ioParams->localDataSize; i++)
 		{
-			if(iter > 0)
-			{
 				b[i] = SCALAR * c[i]; 
-			} 
-			else
-			{
-				b[i] = SCALAR; 
-			} 
 		}
 
 		MPI_Win_complete(win_B); 
@@ -220,7 +225,14 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// send message to ioServer to complete A
 		// then update A
 		// send message to ioServer to print via broadcast
-		wintestflags[WIN_A] = WIN_WAIT;  
+		if(iter > 0)
+		{
+			wintestflags[WIN_A] = WIN_WAIT; 
+		}
+		else
+		{
+			wintestflags[WIN_A] = WIN_ACTIVATE;  
+		} 
 		wintestflags[WIN_C] = WIN_DEACTIVATE; 
 		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
@@ -231,7 +243,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		compTimer[TRIAD][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_A); 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi complete for A \n"); 
+		printf("compServer -> After mpi start for A \n"); 
 #endif 
 
 		for(int i = 0; i < ioParams->localDataSize; i++)

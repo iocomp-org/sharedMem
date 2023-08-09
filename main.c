@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 	initialise(argc, argv, &ioParams); 
 
 	// input user given filenames for each window
-	char filenames[NUM_WIN][100] = {"WinA", "WinB", "WinC"}; 
+	char filenames[NUM_WIN][100] = {"WinA", "WinC", "WinB"}; 
 	fileNameInit(&ioParams, filenames); 
 	
 	// brief hello world to check parameters 
