@@ -125,6 +125,14 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 #ifndef NDEBUG   
 	printf("MPI filetype\n"); 
 #endif       
+	
+
+	free(iodata_test); 
+	iodata_test = NULL; 
+#ifndef NDEBUG   
+	printf("iodata test freed\n"); 
+#endif       
+
 }
 
 
