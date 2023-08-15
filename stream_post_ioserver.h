@@ -33,7 +33,20 @@
 #define SCALAR 5 
 #define STARTING_VAL 1
 
-#define error_check(ierr) if(ierr!=MPI_SUCCESS){ printf("mpi error \n"); exit(1);  }  
+/*
+ * Header file for declaring the error_report_fn and macro error_report which simplifies calling.
+ */
+#ifndef _ERROR_REPORT_H_
+#define _ERROR_REPORT_H_
+
+/*
+ * error_report macro.
+ * Takes an error code as input, expanding to call the error_report_fn with the line number and file
+ * name values defined by the __LINE___ and __FILE__ macros.
+ */
+#define error_check(ierr) error_report_fn(ierr, __LINE__, __FILE__)
+	void error_report_fn(int ierr, int line_no, char *file_name);
+#endif
 
 struct winElements {
 	MPI_Win win; 
