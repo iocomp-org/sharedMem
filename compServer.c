@@ -51,17 +51,17 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	double* c;  
 	struct winElements outputWin; 
 	// a array 
-	outputWin = winAlloc(ioParams->localDataSize, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm, ioParams); 
 	win_A = outputWin.win; 
 	a = outputWin.array; 
 
 	// c array 
-	outputWin = winAlloc(ioParams->localDataSize, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm, ioParams); 
 	win_C = outputWin.win; 
 	c = outputWin.array; 
 
 	// b array 
-	outputWin = winAlloc(ioParams->localDataSize, newComm); 
+	outputWin = winAlloc(ioParams->localDataSize, newComm, ioParams); 
 	win_B = outputWin.win; 
 	b = outputWin.array; 
 
@@ -268,9 +268,9 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 #endif 
 
 	// MPI_Barrier(MPI_COMM_WORLD); 	
-	dataSendComplete(win_A); 
-	dataSendComplete(win_C); 
-	dataSendComplete(win_B); 
+	dataSendComplete(win_A,ioParams); 
+	dataSendComplete(win_C,ioParams); 
+	dataSendComplete(win_B,ioParams); 
 
 	wallTime = MPI_Wtime() - wallTime; 
 
