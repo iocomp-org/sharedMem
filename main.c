@@ -115,7 +115,8 @@ int main(int argc, char** argv)
 	 * i.e. rank 0 and rank 5 would have same colour and then same MPI
 	 * Communicator 
 	 */  
-	colour = globalRank%(globalSize/2); // IO rank and comp rank have same colour
+	// colour = globalRank%(globalSize/2); // IO rank and comp rank have same colour
+	colour = (int)globalRank/2; // IO rank and comp rank have same colour
 	ierr = MPI_Comm_split(MPI_COMM_WORLD, colour, globalRank, &newComm); 
 	error_check(ierr); 
 
@@ -150,7 +151,6 @@ int main(int argc, char** argv)
 		{
 			printf("Compute ranks have size %i \n", computeSize); 
 		}
-
 	}
 	else
 	{
@@ -175,7 +175,10 @@ int main(int argc, char** argv)
 	} 
 	
 	MPI_Finalize();
-
+	//close debug file object 
+#ifndef NDEBUG 
+	fclose(ioParams.debug); 
+#endif 
 	return 0;
 } 
 
