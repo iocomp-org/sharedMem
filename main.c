@@ -92,6 +92,8 @@ int main(int argc, char** argv)
 	// command line interactions to set the problem size and the IO library number  
 	struct params ioParams; 
 	initialise(argc, argv, &ioParams); 
+	ioParams.globalRank = globalRank; 
+	ioParams.globalSize = globalSize; 
 
 	// input user given filenames for each window
 	char filenames[NUM_WIN][100] = {"WinA", "WinC", "WinB"}; 
@@ -120,6 +122,13 @@ int main(int argc, char** argv)
 	int newRank; 
 	ierr = MPI_Comm_rank(newComm,&newRank); 
 	error_check(ierr); 
+
+	// initialise DEBUG file per rank
+#ifndef NDEBUG 
+	initDebugFile(&ioParams, globalRank); 
+#endif 
+	
+	
 #ifndef NDEBUG 
 	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #endif 

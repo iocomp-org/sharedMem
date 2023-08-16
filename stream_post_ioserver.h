@@ -13,7 +13,7 @@
 #define TRIAD 3
 
 // define avg loop count of stream kernels
-#define AVGLOOPCOUNT 10
+#define AVGLOOPCOUNT 1
 
 // define problem size and dimension of data 
 #define NDIM 2
@@ -67,6 +67,14 @@ struct params
 	int ioLibNum; 
 	// filenames 
 	char WRITEFILE[NUM_WIN][AVGLOOPCOUNT][100]; 
+	char debugFile[100]; 
+
+	// file object for debug 
+	FILE* debug; 
+
+	// rank and size 
+	int globalRank, globalSize; 
+	int newRank, newSize; 
 
 	// timer variables
 	// winTime measures the time taken from issuing of the win start to win wait 
@@ -107,3 +115,4 @@ void arrayParamsInit(struct params *iocompParams);
 void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100]); 
 void verify(struct params *ioparams); 
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter); 
+void initDebugFile(struct params* ioParams, int globalRank); 

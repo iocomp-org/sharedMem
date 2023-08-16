@@ -158,7 +158,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 					printf("ioServer window:%i flag positive \n",i); 
 #endif
-					// fileWrite(ioParams, array[i], loopCounter, i); 
+					fileWrite(ioParams, array[i], loopCounter, i); 
 				}
 			} 
 		}
@@ -238,6 +238,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				} 
 			} 
 		} 
+		// fclose(out); 	
 	}
 #endif 
 
