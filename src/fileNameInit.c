@@ -41,6 +41,7 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
 			for(int j = 0; j < AVGLOOPCOUNT; j++)
 			{
 			  strcpy(ioParams->WRITEFILE[i][j], assignNames[i]); 
+				fprintf(ioParams->debug, "fileNameInit-> Window num %i, loop counter %i, filename %s \n",i, j, ioParams->WRITEFILE[i][j]); 
 			//	char iter[5]; 
 			//	sprintf(iter,  "%d", j);
 			//	strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
@@ -49,5 +50,6 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
 			//	strcat(ioParams->WRITEFILE[i][j], EXT); 
 				// printf("write file for win %i and iteration %i = %s \n",i,j, output[i][j]); 
 			} 
-		} 
+		}
+
 } 

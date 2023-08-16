@@ -1,4 +1,4 @@
-CC=cc 
+CC=mpicc.mpich
 CFLAGS=-fPIC -O2 -DNODELETE # -DIOBW #-DVERIFY #-DNDEBUG #-DNODELETE
 
 ODIR = Object_files
