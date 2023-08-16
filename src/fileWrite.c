@@ -48,11 +48,11 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	// finish window, and end win timer 
 	ioParams->winTime_end[windowNum] = MPI_Wtime(); 
 	ioParams->winTime[windowNum][loopCounter[windowNum]] = ioParams->winTime_end[windowNum] - ioParams->winTime_start[windowNum]; 
-	// increment loopCounter after filewrite complete 
-	loopCounter[windowNum]++; 
 #ifndef NDEBUG 
 	printf("fileWrite->After writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n", windowNum, 
 	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
 #endif 
+	// increment loopCounter after filewrite complete 
+	loopCounter[windowNum]++; 
 } 

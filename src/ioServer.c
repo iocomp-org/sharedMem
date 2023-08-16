@@ -86,19 +86,19 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	// declare mult variable to test for completion among all windows 
 	int wintestmult = 1; 
 
-#ifdef IOBW
 	// loopCounter to assign timers per loop iteration for each window
 	for(int i = 0 ; i < NUM_WIN; i ++)
 	{
 		loopCounter[i] = 0; 
+#ifdef IOBW
 		// initialise timers 
 		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
 			ioParams->winTime[i][j] = 0.0; 
 			ioParams->writeTime[i][j] = 0.0; 
 		}
-	}
 #endif 
+	}
 
 	// initialise flag variable to test for window completion
 	int flag[NUM_WIN]; 	

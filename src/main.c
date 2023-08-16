@@ -44,10 +44,6 @@ int main(int argc, char** argv)
 	initialise(argc, argv, &ioParams); 
 	ioParams.globalRank = globalRank; 
 	ioParams.globalSize = globalSize; 
-
-	// input user given filenames for each window
-	char filenames[NUM_WIN][100] = {"WinA", "WinC", "WinB"}; 
-	fileNameInit(&ioParams, filenames); 
 	
 	// brief hello world to check parameters 
 	if(!globalRank)
@@ -79,6 +75,10 @@ int main(int argc, char** argv)
 	initDebugFile(&ioParams, globalRank); 
 	fprintf(ioParams.debug, "Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #endif 
+
+	// input user given filenames for each window
+	char filenames[NUM_WIN][100] = {"WinA", "WinC", "WinB"}; 
+	fileNameInit(&ioParams, filenames); 
 
 	// divide MPI comm world into compute or I/O server based on newRank which is
 	// either 0 or 1 
