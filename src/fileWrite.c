@@ -27,19 +27,19 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 		arrayStart[i] = (int)ioParams->arrayStart[i]; 
 	}
 	
-//	// call io libraries 
-//	switch(ioParams->ioLibNum)
-//	{
-//		case(0): 
-//			mpiiowrite(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]]); 
-//			break; 
-//		case(1): 
-//			phdf5write(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]]); 
-//			break; 
-//		default:
-//			printf("Invalid io number"); 
-//			break; 
-//	} 
+	// call io libraries 
+	switch(ioParams->ioLibNum)
+	{
+		case(0): 
+			mpiiowrite(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			break; 
+		case(1): 
+			phdf5write(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			break; 
+		default:
+			printf("Invalid io number"); 
+			break; 
+	} 
 
 #ifdef IOBW
 	// finish write time 

@@ -7,7 +7,7 @@
 #include <hdf5.h>
 #include "stream_post_ioserver.h"
 
-void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME) 
+void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams) 
 {   
 	// Variable initialisation
 	int i, ierr, rank, size, initialized, 
@@ -32,7 +32,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 
 	status = H5open();
 #ifndef NDEBUG 
-	printf("Before HDF5 open \n"); 
+	fprintf(ioParams->debug,"Before HDF5 open \n"); 
 #endif 
 
 	// Obtain MPI keys 
@@ -41,7 +41,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	MPI_Cart_get(cartcomm, NDIM, dims, periods, coords); 
 	MPI_Info info  = MPI_INFO_NULL; 
 #ifndef NDEBUG 
-	printf("After MPI stuff \n"); 
+	fprintf(ioParams->debug,"After MPI stuff \n"); 
 #endif 
 
 	/* 
@@ -54,7 +54,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 		offset[i] = arraystart[i]; 
 	}
 #ifndef NDEBUG 
-	printf("Initialise dimsf, count, offset\n"); 
+	fprintf(ioParams->debug,"Initialise dimsf, count, offset\n"); 
 #endif 
 
 	/* 
@@ -63,7 +63,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	plist_id = H5Pcreate(H5P_FILE_ACCESS); 
 	H5Pset_fapl_mpio(plist_id, cartcomm, info);
 #ifndef NDEBUG 
-	printf("File access property\n"); 
+	fprintf(ioParams->debug,"File access property\n"); 
 #endif 
 
 	/*
@@ -72,7 +72,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	file_id = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
 	H5Pclose(plist_id);
 #ifndef NDEBUG 
-	printf("New collective file object \n"); 
+	fprintf(ioParams->debug,"New collective file object \n"); 
 #endif 
 
 	/*
@@ -83,7 +83,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 			H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
 	H5Sclose(filespace);
 #ifndef NDEBUG 
-	printf("Dataspace for dataset \n"); 
+	fprintf(ioParams->debug,"Dataspace for dataset \n"); 
 #endif 
 
 	/* 
@@ -107,7 +107,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	status = H5Dwrite (dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, 
 			plist_id, iodata);
 #ifndef NDEBUG 
-	printf("After HDF5 write \n"); 
+	fprintf(ioParams->debug,"After HDF5 write \n"); 
 #endif 
 
 	// Free resources
