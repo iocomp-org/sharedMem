@@ -54,7 +54,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		ierr = MPI_Win_allocate_shared(0, soi, MPI_INFO_NULL, newComm, &array[i], &win_ptr[i]); 
 		error_check(ierr);
 #ifndef NDEBUG 
-		printf("ioServer -> MPI allocatedioParams-> windows %i \n", i); 
+		fprintf(ioParams->debug, "ioServer -> MPI allocatedioParams-> windows %i \n", i); 
 #endif 
 	} 
 
@@ -67,7 +67,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		ierr = MPI_Win_shared_query(win_ptr[i], 0, &arraySize, &dispUnit, &array[i]); 
 		error_check(ierr); 
 #ifndef NDEBUG 
-		printf("ioServer -> MPI shared query %i \n", i); 
+		fprintf(ioParams->debug, "ioServer -> MPI shared query %i \n", i); 
 #endif 
 	} 
 
@@ -111,7 +111,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	{
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("ioServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "ioServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
 		// iterate across all windows 
@@ -128,7 +128,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				if(wintestflags[i]==WIN_WAIT && flag[i]==0)  
 				{
 #ifndef NDEBUG 
-					printf("ioServer window:%i flag negative and win wait implemented\n", i); 
+					fprintf(ioParams->debug, "ioServer window:%i flag negative and win wait implemented\n", i); 
 #endif 
 					// wait for window completion 
 					ierr = MPI_Win_wait(win_ptr[i]); 
@@ -140,7 +140,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				ierr = MPI_Win_post(group, 0, win_ptr[i]);
 				error_check(ierr); 
 #ifndef NDEBUG 
-				printf("ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
+				fprintf(ioParams->debug, "ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
 #endif 
 #ifdef IOBW	
 				ioParams->winTime_start[i] = MPI_Wtime();
@@ -150,13 +150,13 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				ierr = MPI_Win_test(win_ptr[i], &flag[i]); 
 				error_check(ierr);
 #ifndef NDEBUG 
-				printf("ioServer window:%i win test\n",i); 
+				fprintf(ioParams->debug, "ioServer window:%i win test\n",i); 
 #endif 
 				// if window is available to print then print and end timer 
 				if(flag[i])
 				{
 #ifndef NDEBUG 
-					printf("ioServer window:%i flag positive \n",i); 
+					fprintf(ioParams->debug, "ioServer window:%i flag positive \n",i); 
 #endif
 					fileWrite(ioParams, array[i], loopCounter, i); 
 				}
@@ -170,12 +170,12 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 			wintestmult *= wintestflags[j]; 
 		} 
 #ifndef NDEBUG 
-		printf("ioServer -> wintestmult value %i\n", wintestmult); 
+		fprintf(ioParams->debug, "ioServer -> wintestmult value %i\n", wintestmult); 
 #endif 
 	}while(!wintestmult);  // test for completion of all windows 
 
 #ifndef NDEBUG 
-	printf("ioServer -> loop server exited \n"); 
+	fprintf(ioParams->debug, "ioServer -> loop server exited \n"); 
 #endif 
 
 	// free windows and pointer 
@@ -187,7 +187,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		error_check(ierr); 
 		fileWrite(ioParams, array[i], loopCounter, i); 
 #ifndef NDEBUG 
-		printf("ioServer window:%i win wait reached\n",i); 
+		fprintf(ioParams->debug, "ioServer window:%i win wait reached\n",i); 
 #endif 
 		ierr = MPI_Win_free(&win_ptr[i]);
 		error_check(ierr); 

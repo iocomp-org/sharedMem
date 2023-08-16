@@ -116,7 +116,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
 	{
 #ifndef NDEBUG 
-		printf("compServer -> LOOP number %i \n", iter+1); 
+		fprintf(ioParams->debug, "compServer -> LOOP number %i \n", iter+1); 
 #endif 
 //		// COPY
 //		// send message to ioServer to print via broadcast
@@ -167,13 +167,13 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
 		compTimer[SCALE][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_B); 
 #ifndef NDEBUG 
-		printf("compServer -> After win start for B\n"); 
+		fprintf(ioParams->debug, "compServer -> After win start for B\n"); 
 #endif 
 
 		for(int i = 0; i < ioParams->localDataSize; i++)
@@ -184,7 +184,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		MPI_Win_complete(win_B); 
 		compTimer[SCALE][iter] = MPI_Wtime() - compTimer[SCALE][iter]; 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi window unlock for B \n"); 
+		fprintf(ioParams->debug, "compServer -> After mpi window unlock for B \n"); 
 #endif 
 
 		// ADD 
@@ -201,13 +201,13 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
 		compTimer[ADD][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_C); 
 #ifndef NDEBUG 
-		printf("compServer -> After win start for C \n"); 
+		fprintf(ioParams->debug, "compServer -> After win start for C \n"); 
 #endif 
 
 		for(int i = 0; i < ioParams->localDataSize; i++)
@@ -218,7 +218,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		MPI_Win_complete(win_C); 
 		compTimer[ADD][iter] = MPI_Wtime() - compTimer[ADD][iter]; 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi complete for C \n"); 
+		fprintf(ioParams->debug, "compServer -> After mpi complete for C \n"); 
 #endif 
 
 		// TRIAD 
@@ -237,13 +237,13 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
 		compTimer[TRIAD][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_A); 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi start for A \n"); 
+		fprintf(ioParams->debug, "compServer -> After mpi start for A \n"); 
 #endif 
 
 		for(int i = 0; i < ioParams->localDataSize; i++)
@@ -254,7 +254,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		MPI_Win_complete(win_A); 
 		compTimer[TRIAD][iter] = MPI_Wtime() - compTimer[TRIAD][iter]; 
 #ifndef NDEBUG 
-		printf("compServer -> After mpi complete for A \n"); 
+		fprintf(ioParams->debug, "compServer -> After mpi complete for A \n"); 
 #endif 
 	} 
 
@@ -264,7 +264,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	wintestflags[WIN_B] = WIN_FREE; 
 	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-	printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+	fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
 	// MPI_Barrier(MPI_COMM_WORLD); 	

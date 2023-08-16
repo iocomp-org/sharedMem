@@ -23,56 +23,6 @@
 #include <math.h> 
 #include "stream_post_ioserver.h"
 
-//void printData(int* recv)
-//{
-//	for(int i = 0; i < N; i++)
-//	{
-//		printf("%i ", recv[i]); 
-//	}
-//	printf("\n"); 
-//} 
-
-/* 
- * function recieves pointer array, copies this into allocated shared memory
- * array 
- */ 
-struct winElements winAlloc(int len, MPI_Comm newComm)
-{
-	int soi = sizeof(double); 
-	int ierr;
-	MPI_Win win; 
-	int rank;
-	MPI_Comm_rank(newComm, &rank); 
-	double *array; 
-	struct winElements output; 
-	// allocate windows for compute and I/O processes 
-
-	ierr = MPI_Win_allocate_shared(soi*len, soi, MPI_INFO_NULL, newComm, &array, &win); 
-	error_check(ierr);
-#ifndef NDEBUG 
-	printf("comp server allocate window \n"); 
-#endif 
-
-	output.win = win; 
-	output.array = array;  
-	return(output); 
-}
-
-/*
- * function calls mpi barrier to sync up with io process 
- * so that it finishes accessing data and frees up window 
- */ 
-void dataSendComplete(MPI_Win win)
-{
-	// free window and free shared memory pointer 
-#ifndef NDEBUG 
-	printf("MPI win free comp server reached\n"); 
-#endif 
-	int ierr = MPI_Win_free(&win);
-	error_check(ierr); 
-} 
-
-
 int main(int argc, char** argv)
 {
 	//skipped initialization above
@@ -127,11 +77,7 @@ int main(int argc, char** argv)
 	// initialise DEBUG file per rank
 #ifndef NDEBUG 
 	initDebugFile(&ioParams, globalRank); 
-#endif 
-	
-	
-#ifndef NDEBUG 
-	printf("Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
+	fprintf(ioParams.debug, "Global rank=%i, New rank=%i, Colour=%i \n", globalRank, newRank, colour); 
 #endif 
 
 	// divide MPI comm world into compute or I/O server based on newRank which is
