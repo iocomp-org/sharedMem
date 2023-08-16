@@ -25,14 +25,14 @@ export OMP_NUM_THREADS=1
 # for command line arguments 
 if [[ -z ${N} ]]; 
 then 
-  echo "N is not set"
   N=$((2**22))
+  echo "N is not set, set to be ${N}"
 fi 
 
 if [[ -z ${io} ]]; 
 then 
-  echo "I/O is not set"
   io=0
+  echo "I/O is not set, set to be ${io}"
 fi 
 
 FILESIZE=$((${N}*8/2**20))
@@ -40,6 +40,7 @@ IOLIB=("MPIIO" "HDF5")
 
 # <path>/ioLibrary/Filesize(MB) 
 export RUNDIR=/mnt/lustre/a2fs-work3/work/e609/e609/shr203/sharedmem/TEST/${IOLIB[${io}]}/${FILESIZE}MB/${SLURM_NNODES}/${SLURM_NTASKS_PER_NODE}
+echo "DIR $RUNDIR"
 
 rm -rf ${RUNDIR} 
 mkdir -p ${RUNDIR} 
@@ -50,7 +51,7 @@ export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 echo "Job started " $(date +"%T") # start time 
 echo "N" ${N} "IO" ${io} "FILESIZE" ${FILESIZE}MiB
 
-srun ${EXE} --N ${N} --io ${io} > test.out 
+srun --hint=nomultithread  --distribution=block:block ${EXE} --N ${N} --io ${io} > test.out 
 
 wait 
 
