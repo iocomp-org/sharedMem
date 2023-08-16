@@ -34,16 +34,19 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
 		} 
 
 		// assign correct filename in format <filename>_<iteration>.<extension>
+    char assignNames[NUM_WIN][20] = {"WIN1.dat", "WIN2.dat", "WIN3.dat"}; 
 		for(int i = 0; i < NUM_WIN; i++)
 		{
+       
 			for(int j = 0; j < AVGLOOPCOUNT; j++)
 			{
-				char iter[5]; 
-				sprintf(iter,  "%d", j);
-				strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
-				strcat(ioParams->WRITEFILE[i][j], "_"); 
-				strcat(ioParams->WRITEFILE[i][j], iter); 
-				strcat(ioParams->WRITEFILE[i][j], EXT); 
+			  strcpy(ioParams->WRITEFILE[i][j], assignNames[i]); 
+			//	char iter[5]; 
+			//	sprintf(iter,  "%d", j);
+			//	strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
+			//	strcat(ioParams->WRITEFILE[i][j], "_"); 
+			//	strcat(ioParams->WRITEFILE[i][j], iter); 
+			//	strcat(ioParams->WRITEFILE[i][j], EXT); 
 				// printf("write file for win %i and iteration %i = %s \n",i,j, output[i][j]); 
 			} 
 		} 

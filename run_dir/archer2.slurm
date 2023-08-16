@@ -39,7 +39,7 @@ FILESIZE=$((${N}*8/2**20))
 IOLIB=("MPIIO" "HDF5") 
 
 # <path>/ioLibrary/Filesize(MB) 
-export RUNDIR=/mnt/lustre/a2fs-work3/work/e609/e609/shr203/sharedmem/TEST/${IOLIB[${io}]}/${FILESIZE}MB/${SLURM_NNODES}/${SLURM_NTASKS_PER_NODE}
+export RUNDIR=${SLURM_SUBMIT_DIR}/TEST/${IOLIB[${io}]}/${FILESIZE}MiB/${SLURM_NNODES}/${SLURM_NTASKS_PER_NODE}
 echo "DIR $RUNDIR"
 
 rm -rf ${RUNDIR} 
