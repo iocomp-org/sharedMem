@@ -24,10 +24,6 @@ void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 
 	MPI_Comm_size(cartcomm, &nprocs);
 	MPI_Comm_rank(cartcomm, &myrank);
-  if(!myrank)
-  {
-    printf("Size of I/O ranks %i \n",nprocs); 
-  }
 
 	ierr = MPI_Cart_get(cartcomm, NDIM, dims, periods, coords); 
 	error_check(ierr); 
