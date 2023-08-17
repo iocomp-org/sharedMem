@@ -5,17 +5,13 @@
 #include <memory.h>
 #include "stream_post_ioserver.h"
 
-void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
+void mpiRead(double *readData, struct params *ioParams, int windowNum, int iter)
 {
 	int i, ierr, nprocs, myrank; 
 
 	int dims[NDIM],
 			coords[NDIM], 
 			periods[NDIM]; 
-
-	// initialise data buffer to store data read locally 
-	double* iodata_test; 
-	iodata_test = (double *) malloc(sizeof(double)*ioParams->localDataSize); 
 
 	// convert size_t array parameters to int arrays using MPI and HDF5 
 	int localArray[NDIM]; 
@@ -84,31 +80,11 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 	{
 		total_data *= localArray[i]; 
 	}
-	ierr = MPI_File_read_all(fh, iodata_test, total_data, MPI_DOUBLE, &status);   
+	ierr = MPI_File_read_all(fh, readData, total_data, MPI_DOUBLE, &status);   
 	error_check(ierr); 
 #ifndef NDEBUG   
 	printf("MPI file write all \n"); 
 #endif       
-
-	// verify data 
-	int test = valueCheck(ioParams, iodata_test, val, windowNum, iter); 
-	int test_reduced;  
-
-	// sync all values of test, if multiplication comes back as 0 it means
-	// verification failed 
-	MPI_Reduce(&test, &test_reduced, 1, MPI_INT, MPI_PROD, 0, ioParams->ioComm); 
-	if(!myrank)
-	{
-		if(test_reduced == 0)
-		{
-			printf("Verification failed \n"); 
-		} 
-		else
-		{
-			printf("Verification passed for filename %s \n", ioParams->WRITEFILE[windowNum][iter]); 
-		}
-	}
-	
 
 	ierr = MPI_File_close(&fh);
 	error_check(ierr); 
@@ -120,13 +96,6 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 	error_check(ierr); 
 #ifndef NDEBUG   
 	printf("MPI filetype\n"); 
-#endif       
-	
-
-	free(iodata_test); 
-	iodata_test = NULL; 
-#ifndef NDEBUG   
-	printf("iodata test freed\n"); 
 #endif       
 
 }
