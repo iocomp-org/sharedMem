@@ -5,7 +5,7 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 #ifdef IOBW
 	ioParams->writeTime_start = MPI_Wtime(); 
 #ifndef NDEBUG 
-	printf("fileWrite->Before writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n",windowNum, 
+	fprintf(ioParams->debug, "fileWrite->Before writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n",windowNum, 
 	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
 #endif
@@ -52,7 +52,7 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	ioParams->winTime_end[windowNum] = MPI_Wtime(); 
 	ioParams->winTime[windowNum][loopCounter[windowNum]] = ioParams->winTime_end[windowNum] - ioParams->winTime_start[windowNum]; 
 #ifndef NDEBUG 
-	printf("fileWrite->After writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n", windowNum, 
+	fprintf(ioParams->debug, "fileWrite->After writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n", windowNum, 
 	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
 #endif 

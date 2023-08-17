@@ -32,22 +32,22 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
 				printf("ioLibNum invalid, invalid extension applied \n"); 
 				break; 
 		} 
-
+		
+		// assign filename per window and per iteration in the format
+		// windowname_iteration.ext
 		for(int i = 0; i < NUM_WIN; i++)
 		{
 			for(int j = 0; j < AVGLOOPCOUNT; j++)
 			{
-			  strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
+				char iter[5]; 
+				sprintf(iter,  "%d", j);
+				strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
+				strcat(ioParams->WRITEFILE[i][j], "_"); 
+				strcat(ioParams->WRITEFILE[i][j], iter); 
+				strcat(ioParams->WRITEFILE[i][j], EXT); 
 #ifndef NDEBUG 
 				fprintf(ioParams->debug, "fileNameInit-> Window num %i, loop counter %i, filename %s \n",i, j, ioParams->WRITEFILE[i][j]); 
 #endif 
-			//	char iter[5]; 
-			//	sprintf(iter,  "%d", j);
-			//	strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
-			//	strcat(ioParams->WRITEFILE[i][j], "_"); 
-			//	strcat(ioParams->WRITEFILE[i][j], iter); 
-			//	strcat(ioParams->WRITEFILE[i][j], EXT); 
-				// printf("write file for win %i and iteration %i = %s \n",i,j, output[i][j]); 
 			} 
 		}
 

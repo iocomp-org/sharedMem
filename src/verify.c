@@ -31,7 +31,7 @@ void verify(struct params *ioParams)
 
 		a = b + (SCALAR*c); 
 #ifndef NDEBUG
-		printf("a[%i] = %lf, b[%i] = %lf, c[%i] = %lf \n", iter, a, iter, b, iter, c); 
+		fprintf(ioParams->debug, "a[%i] = %lf, b[%i] = %lf, c[%i] = %lf \n", iter, a, iter, b, iter, c); 
 #endif 
 
 		// read all the windows and iterations 
@@ -92,7 +92,7 @@ void verify(struct params *ioParams)
 	free(readData); 
 	readData = NULL; 
 #ifndef NDEBUG   
-	printf("iodata test freed\n"); 
+	fprintf(ioParams->debug,"iodata test freed\n"); 
 #endif       
 
 } 

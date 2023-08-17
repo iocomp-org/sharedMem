@@ -4,112 +4,153 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
+#include <assert.h>
 #include <hdf5.h>
 #include "sharedmem.h"
+#define DATASETNAME "IntArray"
 
-void phdf5Read(double *readData, char* FILENAME, struct params *ioParams) 
+void phdf5Read(double *readData, char* fileName, struct params *ioParams) 
 {   
-	// Variable initialisation
-	int  rank, size; 
-	int dims[NDIM],
-			coords[NDIM], 
-			periods[NDIM]; 
 
-	char dsetname[100] = "IntArray"; 
+	hid_t       file, dataset;         /* handles */
+	hid_t       datatype, dataspace;
+	hid_t       memspace;
+	H5T_class_t class;                 /* datatype class */
+	H5T_order_t order;                 /* data order */
+	size_t      size;                  /*
+																			* size of the data element
+																			* stored in file
+																			*/
+	hsize_t     dimsm[NDIM];              /* memory space dimensions */
+	herr_t      status;
+	herr_t			ierr; 
 
-	// HDF5 initialisations
-	hid_t   file_id, // file identifier
-					dset_id, // dataset identifier 
-					filespace, // dataspace identifier in file 
-					memspace, // dataspace identifier in memory
-					plist_id;  // property list identifier 
+	hsize_t      count[NDIM];              /* size of the hyperslab in the file */
+	hsize_t      offset[NDIM];             /* hyperslab offset in the file */
+	int          i, j, k, status_n, rank;
 
-	herr_t status = H5open();
-	error_check(status); 
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"Before HDF5 open \n"); 
-#endif 
+	hid_t plist_id, xfer_plist;		/* File access templates */
 
-	hsize_t localArray[NDIM], globalArray[NDIM], arrayStart[NDIM];
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"Initialise array descriptors \n"); 
-#endif 
+	 MPI_Info info = MPI_INFO_NULL;
 
-	for(int i=0; i<NDIM; i++)
+	// specifies the dimensions of dataset, dimsf[0] number of rows, dimsf[1] number of columns, dimsf[2] so on..
+	hsize_t localArray[NDIM], globalArray[NDIM], arrayStart[NDIM];   
+
+	/* 
+	 * Define hyperslab in the dataset. 
+	 * NULL for contigous selection of dataset for stride 
+	 * NULL for 1 element per dimension of dataset for block
+	 */
+	for (i = 0; i < NDIM; i++)
 	{
-		localArray[i] = (hsize_t) ioParams->localArray[i]; 	
-		globalArray[i] = (hsize_t) ioParams->globalArray[i]; 	
-		arrayStart[i] = (hsize_t) ioParams->arrayStart[i]; 	
+		offset[i]		= (hsize_t)ioParams->arrayStart[i]; 
+		count[i]		= (hsize_t)ioParams->localArray[i];  
+		dimsm[i]		= (hsize_t)ioParams->globalArray[i];
 	}
 
 
-	// Obtain MPI keys 
-	MPI_Comm_size(ioParams->cartcomm, &size);
-	MPI_Comm_rank(ioParams->cartcomm, &rank);
-	MPI_Cart_get(ioParams->cartcomm, NDIM, dims, periods, coords); 
-	MPI_Info info  = MPI_INFO_NULL; 
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"After MPI stuff \n"); 
-#endif 
-
 	/* 
-	 * Set up file access property list with parallel I/O access
+	 * Open HDF5 file 
 	 */
+	// Set up file access property list with parallel I/O access
 	plist_id = H5Pcreate(H5P_FILE_ACCESS); 
-	H5Pset_fapl_mpio(plist_id, ioParams->cartcomm, info);
+	// error_check(plist_id); 
+
+	// Set up parallel access with communicator 	
+	ierr = H5Pset_fapl_mpio(plist_id, ioParams->cartcomm, info);
+	// error_check(ierr); 
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"File access property\n"); 
 #endif 
 
 	/*
-	 * Create a new file collectively and release property list identifier.
+	 * Open the file collectively 
 	 */
-	file_id = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
-	H5Pclose(plist_id);
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"New collective file object \n"); 
-#endif 
+	file = H5Fopen(fileName, H5F_ACC_RDONLY, plist_id);
+	// error_check(file); 
+
+	/* Release file-access template */
+	ierr =H5Pclose(plist_id);
+	// error_check(ierr); 
 
 	/*
-	 * Create the dataspace for the dataset.
+	 * Open datasets in the file object 
 	 */
-	filespace = H5Screate_simple(NDIM, globalArray, NULL); 
-	dset_id = H5Dcreate(file_id, dsetname, H5T_NATIVE_DOUBLE, filespace, 
-			H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT); 
-	H5Sclose(filespace);
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"Dataspace for dataset \n"); 
-#endif 
+	dataset = H5Dopen(file, DATASETNAME, H5P_DEFAULT);
+	// error_check(dataset); 
 
-	/* 
-	 * Each process defines dataset in memory and writes it to the hyperslab
-	 * in the file.
-	 */
-	memspace = H5Screate_simple(NDIM, localArray, NULL); 
+//	/*
+//	 * Get datatype and dataspace handles and then query
+//	 * dataset class, order, size, rank and dimensions.
+//	 */
+//	datatype  = H5Dget_type(dataset);     /* datatype handle */ 
+//	class     = H5Tget_class(datatype);
+//	order     = H5Tget_order(datatype);
+//
+//	size  = H5Tget_size(datatype);
+//	printf(" Data size is %ld \n", size);
+	
+	// create a file dataspace independently 
+	// stride and block are set to be NULL 
+	dataspace = H5Dget_space(dataset);    /* dataspace handle */
+	// error_check(dataspace); 
+	ierr = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
+			count, NULL);
+	// error_check(ierr); 
 
+
+	// create memory dataspace independently 
+	memspace = H5Screate_simple(NDIM,count,NULL);   
+	// error_check(memspace); 
+	
+	// set up collective transfer properties list 
+	xfer_plist = H5Pcreate (H5P_DATASET_XFER);
+	// error_check(xfer_plist); 
+	ierr=H5Pset_dxpl_mpio(xfer_plist, H5FD_MPIO_COLLECTIVE);
+	// error_check(ierr); 
+
+	/* read data collectively */
+	ierr = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
+		xfer_plist, readData);					    
+	
+	for(int i = 0; i < ioParams->localDataSize; i++)
+	{
+		printf("%lf, ", readData[i]); 
+	} 
+	// error_check(ierr); 
+
+//	status = H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, offset, NULL, 
+//			count, NULL);
+//
+//	/*
+//	 * Define the memory dataspace.
+//	 */
+//	memspace = H5Screate_simple(NDIM,,NULL);   
+//
+//	/* 
+//	 * Define memory hyperslab. 
+//	 */
+//	status = H5Sselect_hyperslab(memspace, H5S_SELECT_SET, offset, NULL, 
+//			count, NULL);
+//
+//	/*
+//	 * Read data from hyperslab in the file into the hyperslab in 
+//	 * memory and display.
+//	 */
+//	status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
+//			H5P_DEFAULT, readData);
+//
+//	for(int i = 0; i < ioParams->localDataSize; i++)
+//	{
+//		printf("%lf,", readData[i]); 
+//	} 
+//
 	/*
-	 * Select hyperslab in the file.
+	 * Close/release resources.
 	 */
-	filespace = H5Dget_space(dset_id); // makes a copy of the dataspace FOR the dataset dset_id
-	H5Sselect_hyperslab(filespace, H5S_SELECT_SET, arrayStart, NULL, localArray, NULL); 
+	H5Dclose(dataset);
+	H5Sclose(dataspace);
+	H5Sclose(memspace);
+	H5Fclose(file);
 
-	/*
-	 * Create property list for collective dataset write.
-	 */
-	plist_id = H5Pcreate(H5P_DATASET_XFER); // sets data transfer mode.
-	H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE); // sets data transfer mode.
-
-	status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, 
-			plist_id, readData);
-#ifndef NDEBUG 
-	fprintf(ioParams->debug,"After HDF5 write \n"); 
-#endif 
-
-	// Free resources
-	status = H5Sclose (memspace);
-	status = H5Sclose (filespace);
-	status = H5Dclose (dset_id);    
-	status = H5Pclose (plist_id); 
-	status = H5Fclose (file_id);
-
-}
+}     
