@@ -132,3 +132,4 @@ int valueCheck(struct params *ioParams, double* iodata_test, double val, int win
 void initDebugFile(struct params* ioParams, int globalRank); 
 void phdf5Read(double *readData, struct params *ioParams, int windowNum, int iter); 
 void adioswrite(double* iodata, char* FILENAME,  struct params *ioParams); 
+void adios2Read(double* readData, char* FILENAME, struct params *iocompParams); 

@@ -5,7 +5,6 @@
 #include <assert.h> 
 #include <math.h>
 #include "stream_post_ioserver.h"
-#define FILENAME "ioserver_output.csv"
 
 void verify(struct params *ioParams)
 {
@@ -51,8 +50,11 @@ void verify(struct params *ioParams)
 						break; 
 				default: 
 						break; 
-			} 
+			}
 			
+			char FILENAME[100]; 
+			strcpy(FILENAME, ioParams->WRITEFILE[windowNum][iter]); 
+
 			switch(ioParams->ioLibNum)
 			{
 				case(0):
@@ -60,6 +62,9 @@ void verify(struct params *ioParams)
 					break; 
 				case(1):
 					phdf5Read(readData, ioParams, windowNum, iter); 
+					break; 
+				case(2): case(3): case(4):
+					adios2Read(readData, FILENAME, ioParams); 
 					break; 
 			} 
 
@@ -78,7 +83,7 @@ void verify(struct params *ioParams)
 				} 
 				else
 				{
-					printf("Verification passed for filename %s \n", ioParams->WRITEFILE[windowNum][iter]); 
+					printf("Verification passed for filename %s \n", FILENAME); 
 				}
 			}
 		} 
