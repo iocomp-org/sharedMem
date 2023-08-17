@@ -36,6 +36,9 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 		case(1): 
 			phdf5write(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
+		case(2): case(3): case(4): 
+			adioswrite(iodata, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			break; 
 		default:
 			printf("Invalid io number"); 
 			break; 

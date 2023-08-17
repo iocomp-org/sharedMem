@@ -1,18 +1,18 @@
 CC=cc 
-CFLAGS= -fPIC -O2 -Wall -Wpedantic -Werror -Wextra  
-CFLAGS+= -DNODELETE -DIOBW -DVERIFY #-DNDEBUG #-DNODELETE
+CFLAGS= -fPIC -O2 -DADIOS2_USE_MPI #-Wall -Wpedantic -Werror -Wextra  
+CFLAGS+= -DNODELETE -DIOBW -DVERIFY -DNDEBUG #-DNODELETE 
 
 ODIR = Object_files
 
-LFLAGS = -I$(HDF5_DIR)/include
+LFLAGS = -I$(HDF5_DIR)/include -I$(ADIOS2_DIR)/include
 
-LIBS = -L$(HDF5_DIR)/lib -lhdf5_hl -lhdf5 -lm 
+LIBS = -L$(HDF5_DIR)/lib -lhdf5_hl -lhdf5 -lm -L$(ADIOS2_DIR)/lib -ladios2_c_mpi -ladios2_c -L$(ADIOS2_DIR)/lib64 -ladios2_c -ladios2_c_mpi 
 
 DEPS=stream_post_ioserver.h
 
 MAIN=sharedmem 
 
-SRCS = main.c ioServer.c compServer.c initialise.c  mpiWrite.c arrayParamsInit.c verify.c  fileNameInit.c fileWrite.c hdf5Write.c deleteFiles.c  mpiRead.c valueCheck.c checks.c initDebugFile.c winAlloc.c hdf5Read.c 
+SRCS = main.c ioServer.c compServer.c initialise.c  mpiWrite.c arrayParamsInit.c verify.c  fileNameInit.c fileWrite.c hdf5Write.c deleteFiles.c  mpiRead.c valueCheck.c checks.c initDebugFile.c winAlloc.c hdf5Read.c  adios2Write.c 
 
 _OBJS = $(SRCS:.c=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))

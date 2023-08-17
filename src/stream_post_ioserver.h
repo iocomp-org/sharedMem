@@ -1,6 +1,9 @@
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>  
+#include <adios2_c.h>
+#include <adios2/c/adios2_c_adios.h> 
+#include <adios2/c/adios2_c_types.h>
 
 // define number of shared memory windows 
 #define NUM_WIN 3
@@ -45,13 +48,13 @@
  * name values defined by the __LINE___ and __FILE__ macros.
  */
 #define error_check(ierr) error_report_fn(ierr, __LINE__, __FILE__)
-	void error_report_fn(int ierr, int line_no, char *file_name);
+void error_report_fn(int ierr, int line_no, char *file_name);
 #endif
 
 struct winElements {
 	MPI_Win win; 
 	double* array; 
-	}; 
+}; 
 /*
  * structure passes around to most functions in program 
  */ 
@@ -92,6 +95,17 @@ struct params
 	// communicators 
 	MPI_Comm cartcomm, newComm, ioComm; 
 
+	// ADIOS2 
+	char *ADIOS2_IOENGINES[3];
+	int adios2Init; 
+	// adios2 object 
+	adios2_adios *adios;  
+	// adios2 io object 
+	adios2_io* io; 
+	// adios2 variable object 
+	adios2_variable *var_iodata; 
+
+
 }; 
 extern struct iocomp_params iocompParams; 
 void printData(int* recv); 
@@ -117,3 +131,4 @@ void verify(struct params *ioparams);
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter); 
 void initDebugFile(struct params* ioParams, int globalRank); 
 void phdf5Read(double *readData, struct params *ioParams, int windowNum, int iter); 
+void adioswrite(double* iodata, char* FILENAME,  struct params *ioParams); 
