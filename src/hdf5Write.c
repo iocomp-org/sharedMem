@@ -5,7 +5,7 @@
 #include <string.h>
 #include <memory.h>
 #include <hdf5.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams) 
 {   

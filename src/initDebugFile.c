@@ -2,7 +2,7 @@
 #include <stdlib.h>  
 #include <string.h> 
 #include <errno.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void initDebugFile(struct params* ioParams,int globalRank)
 {

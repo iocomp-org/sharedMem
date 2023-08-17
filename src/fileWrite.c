@@ -1,4 +1,4 @@
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 #include <errno.h>
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum)
 {	

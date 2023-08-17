@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter)
 {

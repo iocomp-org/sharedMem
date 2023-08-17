@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>  
 #include <string.h> 
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 // each window can write to its own file, initialise write file name for
 // each window number 
 

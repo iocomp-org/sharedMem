@@ -3,7 +3,7 @@
 #include <adios2_c.h>
 #include <adios2/c/adios2_c_adios.h> 
 #include <adios2/c/adios2_c_types.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 #define config_file "config.xml"
 
 

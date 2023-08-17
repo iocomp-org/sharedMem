@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <mpi.h>
 #include <memory.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void mpiRead(double *readData, char* FILENAME, struct params *ioParams)
 {

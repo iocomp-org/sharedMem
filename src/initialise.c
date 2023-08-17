@@ -5,7 +5,7 @@
 #include <getopt.h> 
 #include <string.h> 
 #include <assert.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void initialise(int argc, char** argv, struct params *ioParams)
 {

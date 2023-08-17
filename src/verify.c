@@ -4,7 +4,7 @@
 #include <string.h> 
 #include <assert.h> 
 #include <math.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void verify(struct params *ioParams)
 {

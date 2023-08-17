@@ -5,7 +5,7 @@
 #include <string.h>
 #include <memory.h>
 #include <hdf5.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 void phdf5Read(double *readData, char* FILENAME, struct params *ioParams) 
 {   

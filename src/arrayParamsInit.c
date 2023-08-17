@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <assert.h>
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 #define HIGH_LOW 1
 #define FIXED_IO_RANK 0

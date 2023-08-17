@@ -3,7 +3,7 @@
 #include <stdlib.h>  
 #include <string.h> 
 #include <assert.h> 
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 #define FILENAME "compserver_output.csv"
 

@@ -1,4 +1,4 @@
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 /* 
  * function recieves pointer array, copies this into allocated shared memory
  * array 

@@ -8,7 +8,7 @@ LFLAGS = -I$(HDF5_DIR)/include -I$(ADIOS2_DIR)/include
 
 LIBS = -L$(HDF5_DIR)/lib -lhdf5_hl -lhdf5 -lm -L$(ADIOS2_DIR)/lib -ladios2_c_mpi -ladios2_c -L$(ADIOS2_DIR)/lib64 -ladios2_c -ladios2_c_mpi 
 
-DEPS=stream_post_ioserver.h
+DEPS=sharedmem.h
 
 MAIN=sharedmem 
 

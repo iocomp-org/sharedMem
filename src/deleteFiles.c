@@ -1,7 +1,7 @@
 #define _XOPEN_SOURCE 500
 #include <ftw.h>
 #include <stdio.h> 
-#include "stream_post_ioserver.h"
+#include "sharedmem.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
