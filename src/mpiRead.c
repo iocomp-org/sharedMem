@@ -5,7 +5,7 @@
 #include <memory.h>
 #include "stream_post_ioserver.h"
 
-void mpiRead(double *readData, struct params *ioParams, int windowNum, int iter)
+void mpiRead(double *readData, char* FILENAME, struct params *ioParams)
 {
 	int i, ierr, nprocs, myrank; 
 
@@ -35,7 +35,7 @@ void mpiRead(double *readData, struct params *ioParams, int windowNum, int iter)
 	ierr = MPI_Cart_get(ioParams->cartcomm, NDIM, dims, periods, coords); 
 	error_check(ierr); 
 
-	ierr = MPI_File_open(ioParams->cartcomm, ioParams->WRITEFILE[windowNum][iter],
+	ierr = MPI_File_open(ioParams->cartcomm, FILENAME,
 			MPI_MODE_CREATE | MPI_MODE_RDWR, MPI_INFO_NULL, &fh); 
 	error_check(ierr); 
 
@@ -59,7 +59,7 @@ void mpiRead(double *readData, struct params *ioParams, int windowNum, int iter)
 	printf("MPI type commit \n"); 
 #endif       
 
-	ierr = MPI_File_open(ioParams->cartcomm, ioParams->WRITEFILE[windowNum][iter], MPI_MODE_RDONLY, 
+	ierr = MPI_File_open(ioParams->cartcomm, FILENAME, MPI_MODE_RDONLY, 
 			MPI_INFO_NULL, &fh); 
 	error_check(ierr); 
 #ifndef NDEBUG   

@@ -7,7 +7,7 @@
 #include <hdf5.h>
 #include "stream_post_ioserver.h"
 
-void phdf5Read(double *readData, struct params *ioParams, int windowNum, int iter)
+void phdf5Read(double *readData, char* FILENAME, struct params *ioParams) 
 {   
 	// Variable initialisation
 	int  rank, size; 
@@ -64,7 +64,7 @@ void phdf5Read(double *readData, struct params *ioParams, int windowNum, int ite
 	/*
 	 * Create a new file collectively and release property list identifier.
 	 */
-	file_id = H5Fcreate(ioParams->WRITEFILE[windowNum][iter], H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+	file_id = H5Fcreate(FILENAME, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
 	H5Pclose(plist_id);
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"New collective file object \n"); 

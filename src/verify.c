@@ -58,10 +58,10 @@ void verify(struct params *ioParams)
 			switch(ioParams->ioLibNum)
 			{
 				case(0):
-					mpiRead(readData, ioParams, windowNum, iter); 
+					mpiRead(readData, FILENAME, ioParams ); 
 					break; 
 				case(1):
-					phdf5Read(readData, ioParams, windowNum, iter); 
+					phdf5Read(readData, FILENAME, ioParams); 
 					break; 
 				case(2): case(3): case(4):
 					adios2Read(readData, FILENAME, ioParams); 

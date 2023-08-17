@@ -119,7 +119,6 @@ struct winElements winAlloc(int len, MPI_Comm newcomm, struct params *ioparams);
 void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams); 
 void ioServerWrite(char* WRITEFILE, int* array, int elementsNum); 
 void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME, struct params* ioParams ); 
-void mpiRead(double *readData, struct params *ioParams, int windowNum, int iter); 
 void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams); 
 void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int windowNum); 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams); 
@@ -130,6 +129,9 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100]);
 void verify(struct params *ioparams); 
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter); 
 void initDebugFile(struct params* ioParams, int globalRank); 
-void phdf5Read(double *readData, struct params *ioParams, int windowNum, int iter); 
 void adioswrite(double* iodata, char* FILENAME,  struct params *ioParams); 
+
+// Reading functions 
+void mpiRead(double *readData, char* FILENAME,  struct params *iocompParams); 
+void phdf5Read(double *readData, char* FILENAME, struct params *iocompParams); 
 void adios2Read(double* readData, char* FILENAME, struct params *iocompParams); 
