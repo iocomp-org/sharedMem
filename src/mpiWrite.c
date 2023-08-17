@@ -6,7 +6,7 @@
 #include <memory.h>
 #include "stream_post_ioserver.h"
 
-void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME, struct params* ioParams )
+void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME, struct params* ioParams )
 {   
 	int i, ierr, nprocs, myrank; 
 
@@ -14,13 +14,10 @@ void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 			coords[NDIM], 
 			periods[NDIM]; 
 
-	int order = 0, 
-			disp = 0; // number of bytes to be skipped from the start. ex headers. 
-
 	// MPI initialisations
 	MPI_File        fh; 
 	MPI_Status      status;
-	MPI_Datatype    filetype, mpi_subarray; 
+	MPI_Datatype    filetype; 
 
 	MPI_Comm_size(cartcomm, &nprocs);
 	MPI_Comm_rank(cartcomm, &myrank);
@@ -31,7 +28,6 @@ void mpiiowrite(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	ierr = MPI_File_open(cartcomm, FILENAME,
 			MPI_MODE_CREATE | MPI_MODE_RDWR, MPI_INFO_NULL, &fh); 
 	error_check(ierr); 
-	MPI_Info info  = MPI_INFO_NULL; 
 
 #ifndef NDEBUG   
 	fprintf(ioParams->debug,"Cartcomm rank and size %i %i \n", myrank, nprocs); 

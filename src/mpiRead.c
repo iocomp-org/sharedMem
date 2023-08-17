@@ -13,9 +13,6 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 			coords[NDIM], 
 			periods[NDIM]; 
 
-	int order = 0, 
-			disp = 0; // number of bytes to be skipped from the start. ex headers. 
-
 	// initialise data buffer to store data read locally 
 	double* iodata_test; 
 	iodata_test = (double *) malloc(sizeof(double)*ioParams->localDataSize); 
@@ -34,7 +31,7 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 	// MPI initialisations
 	MPI_File        fh; 
 	MPI_Status      status;
-	MPI_Datatype    filetype, mpi_subarray; 
+	MPI_Datatype    filetype; 
 
 	MPI_Comm_size(ioParams->cartcomm, &nprocs);
 	MPI_Comm_rank(ioParams->cartcomm, &myrank);
@@ -45,7 +42,6 @@ void mpiRead(struct params *ioParams, int windowNum, int iter, double val)
 	ierr = MPI_File_open(ioParams->cartcomm, ioParams->WRITEFILE[windowNum][iter],
 			MPI_MODE_CREATE | MPI_MODE_RDWR, MPI_INFO_NULL, &fh); 
 	error_check(ierr); 
-	MPI_Info info  = MPI_INFO_NULL; 
 
 #ifndef NDEBUG   
 	printf("Cartcomm rank and size %i %i \n", myrank, nprocs); 

@@ -64,7 +64,7 @@ void arrayParamsInit(struct params *iocompParams)
 	}
 
 	// final check if the array dimensions multiply to give the local data size 
-	assert( (iocompParams->localArray[0]*iocompParams->localArray[1]) == iocompParams->localDataSize);
+	assert( (int)(iocompParams->localArray[0]*iocompParams->localArray[1]) == iocompParams->localDataSize);
 
 	/*
 	 * globalArray is multiplied by total size of available processors 

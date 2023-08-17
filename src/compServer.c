@@ -30,7 +30,6 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 	// declare and initialise timers for NUM WIN = 3 and start wall Time
 	double compTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
-	double waitTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double wallTime = MPI_Wtime(); 
 
 	FILE* out; 
@@ -40,7 +39,6 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
 			compTimer[i][j] = 0.0; 
-			waitTimer[i][j] = 0.0; 
 		}
 	}
 
@@ -322,7 +320,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 			compTimer_avg[i] /= AVGLOOPCOUNT; 
 		}
 		
-		int test = remove(FILENAME);
+		remove(FILENAME);
 		out = fopen(FILENAME, "w+");
 		if (out == NULL)
 		{

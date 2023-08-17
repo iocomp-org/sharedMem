@@ -5,7 +5,7 @@
 // each window can write to its own file, initialise write file name for
 // each window number 
 
-void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
+void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100]) 
 {
 
 		char EXT[10]; 
@@ -30,18 +30,17 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100])
 				break; 
 			default:
 				printf("ioLibNum invalid, invalid extension applied \n"); 
-				exit; 
+				break; 
 		} 
 
-		// assign correct filename in format <filename>_<iteration>.<extension>
-    char assignNames[NUM_WIN][20] = {"WIN1.dat", "WIN2.dat", "WIN3.dat"}; 
 		for(int i = 0; i < NUM_WIN; i++)
 		{
-       
 			for(int j = 0; j < AVGLOOPCOUNT; j++)
 			{
-			  strcpy(ioParams->WRITEFILE[i][j], assignNames[i]); 
+			  strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 
+#ifndef NDEBUG 
 				fprintf(ioParams->debug, "fileNameInit-> Window num %i, loop counter %i, filename %s \n",i, j, ioParams->WRITEFILE[i][j]); 
+#endif 
 			//	char iter[5]; 
 			//	sprintf(iter,  "%d", j);
 			//	strcpy(ioParams->WRITEFILE[i][j], filenames[i]); 

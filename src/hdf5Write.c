@@ -7,13 +7,14 @@
 #include <hdf5.h>
 #include "stream_post_ioserver.h"
 
-void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, int ndim, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams) 
+void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams) 
 {   
 	// Variable initialisation
-	int i, ierr, rank, size, initialized, 
-			dims[NDIM],
+	int i,  rank, size; 
+	int dims[NDIM],
 			coords[NDIM], 
 			periods[NDIM]; 
+
 	char dsetname[100] = "IntArray"; 
 
 	// HDF5 initialisations
@@ -21,16 +22,16 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 					dset_id, // dataset identifier 
 					filespace, // dataspace identifier in file 
 					memspace, // dataspace identifier in memory
-					plist_id, // property list identifier 
-					xf_id; 
+					plist_id;  // property list identifier 
+
 	hsize_t count[NDIM], 
 					offset[NDIM],
-					dimsf[NDIM],   // specifies the dimensions of dataset, dimsf[0] number of rows, dimsf[1] number of columns, dimsf[2] so on..
-					maxdims[NDIM], // to specify maximum dimensions. 
-					block[NDIM]; // block array determines size of element blcok selected from dataspace. 
-	herr_t  status;
+					dimsf[NDIM];   // specifies the dimensions of dataset, dimsf[0] number of rows, dimsf[1] number of columns, dimsf[2] so on..
 
-	status = H5open();
+	herr_t status = H5open();
+	error_check(status); 
+
+	
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"Before HDF5 open \n"); 
 #endif 
@@ -49,9 +50,9 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	 */ 
 	for (i = 0; i < NDIM; i++)
 	{
-		dimsf[i] = arraygsize[i]; 
-		count[i] = arraysubsize[i]; 
-		offset[i] = arraystart[i]; 
+		dimsf[i] = (size_t) arraygsize[i]; 
+		count[i] = (size_t) arraysubsize[i]; 
+		offset[i] = (size_t) arraystart[i]; 
 	}
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"Initialise dimsf, count, offset\n"); 

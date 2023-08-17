@@ -83,7 +83,6 @@ int main(int argc, char** argv)
 	// divide MPI comm world into compute or I/O server based on newRank which is
 	// either 0 or 1 
 	// assign compute and I/O rank 
-	int colour_io; 
 	MPI_Comm computeComm, ioComm; 
 	int computeRank, ioRank, computeSize, ioSize;
 

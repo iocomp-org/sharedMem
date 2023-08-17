@@ -16,7 +16,7 @@ void initDebugFile(struct params* ioParams,int globalRank)
 	// attach extension 
 	strcat(ioParams->debugFile, ".out"); 
 
-	int test = remove(ioParams->debugFile);
+	remove(ioParams->debugFile);
 
 	// create file in append mode 
 	ioParams->debug = fopen(ioParams->debugFile,"a");

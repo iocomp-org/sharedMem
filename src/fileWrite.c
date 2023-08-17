@@ -31,10 +31,10 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	switch(ioParams->ioLibNum)
 	{
 		case(0): 
-			mpiiowrite(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			mpiiowrite(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
 		case(1): 
-			phdf5write(iodata, localArray, globalArray, arrayStart, NDIM, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			phdf5write(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
 		default:
 			printf("Invalid io number"); 

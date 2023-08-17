@@ -199,7 +199,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	// initialise file object 
 	if(!ioRank)
 	{
-		int test = remove(FILENAME);
+		remove(FILENAME);
 		out = fopen(FILENAME, "w+");
 		if (out == NULL)
 		{
