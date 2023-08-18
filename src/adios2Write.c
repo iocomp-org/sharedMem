@@ -7,35 +7,41 @@
 #define config_file "config.xml"
 
 
-void adioswrite(double* iodata, char* FILENAME, struct params *iocompParams)
+void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 {   
 	adios2_error errio; 
 
-	iocompParams->ADIOS2_IOENGINES[0] = "HDF5"; 
-	iocompParams->ADIOS2_IOENGINES[1] = "BP4"; 
-	iocompParams->ADIOS2_IOENGINES[2] = "BP5";
+	ioParams->ADIOS2_IOENGINES[0] = "HDF5"; 
+	ioParams->ADIOS2_IOENGINES[1] = "BP4"; 
+	ioParams->ADIOS2_IOENGINES[2] = "BP5";
 
-	// adios2_adios *adios = adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
-	adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
-
-	// iocompParams->adios = adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
-	iocompParams->io = adios2_declare_io(iocompParams->adios, 
-			iocompParams->ADIOS2_IOENGINES[iocompParams->ioLibNum]); //IO handler declaration
+	// adios2_adios *adios = adios2_init_config_mpi(config_file, ioParams->cartcomm); 
+	adios2_init_config_mpi(config_file, ioParams->cartcomm); 
+#ifndef NDEBUG
+	fprintf(ioParams->debug, "adios2Write->config file read \n");
+#endif
+	
+	// declare I/O engine, subtract 2 as ADIOS2 starts from ioLibNum=2 
+	ioParams->io = adios2_declare_io(ioParams->adios, 
+			ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); //IO handler declaration
+#ifndef NDEBUG
+	fprintf(ioParams->debug, "adios2Write->adios2  declare I/O engine %s \n", ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]);
+#endif
 
 #ifndef NDEBUG
-	printf("adios2Write->adios2Init flag %i \n", iocompParams->adios2Init);
+	printf("adios2Write->adios2Init flag %i \n", ioParams->adios2Init);
 #endif
-	if(!iocompParams->adios2Init) // check if declared before so that adios2 variable is not defined again. 
+	if(!ioParams->adios2Init) // check if declared before so that adios2 variable is not defined again. 
 	{
-		iocompParams->var_iodata = adios2_define_variable(iocompParams->io, "iodata", adios2_type_double,NDIM,
-				iocompParams->globalArray, iocompParams->arrayStart, iocompParams->localArray, adios2_constant_dims_true); 
-		iocompParams->adios2Init = 1;  
+		ioParams->var_iodata = adios2_define_variable(ioParams->io, "iodata", adios2_type_double,NDIM,
+				ioParams->globalArray, ioParams->arrayStart, ioParams->localArray, adios2_constant_dims_true); 
+		ioParams->adios2Init = 1;  
 #ifndef NDEBUG
 		printf("adios2Write->variable defined \n");
 #endif
 	}
 
-	adios2_engine *engine = adios2_open(iocompParams->io, FILENAME, adios2_mode_write);
+	adios2_engine *engine = adios2_open(ioParams->io, FILENAME, adios2_mode_write);
 #ifndef NDEBUG
 	printf("adios2Write->engine opened \n");
 #endif
@@ -46,7 +52,7 @@ void adioswrite(double* iodata, char* FILENAME, struct params *iocompParams)
 	printf("adios2Write->begin step \n");
 #endif
 
-	errio = adios2_put(engine,iocompParams->var_iodata, iodata, adios2_mode_deferred);
+	errio = adios2_put(engine,ioParams->var_iodata, iodata, adios2_mode_deferred);
 	error_check(errio); 
 #ifndef NDEBUG
 	printf("adios2Write->writing completed \n");
