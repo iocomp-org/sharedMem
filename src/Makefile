@@ -1,5 +1,5 @@
 CC=cc 
-CFLAGS= -fPIC -O2 -DADIOS2_USE_MPI #-Wall -Wpedantic -Werror -Wextra  
+CFLAGS= -fPIC -O2 -DADIOS2_USE_MPI -Wall -Wpedantic -Werror -Wextra  
 CFLAGS+= -DNODELETE -DIOBW -DVERIFY #-DNDEBUG #-DNODELETE 
 
 ODIR = Object_files
