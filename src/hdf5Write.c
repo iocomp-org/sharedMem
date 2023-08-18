@@ -7,7 +7,7 @@
 #include <hdf5.h>
 #include "sharedmem.h"
 
-void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams) 
+void phdf5write(double* iodata, char* FILENAME,  struct params* ioParams) 
 {   
 	// Variable initialisation
 	int i,  rank, size; 
@@ -37,9 +37,9 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 #endif 
 
 	// Obtain MPI keys 
-	MPI_Comm_size(cartcomm, &size);
-	MPI_Comm_rank(cartcomm, &rank);
-	MPI_Cart_get(cartcomm, NDIM, dims, periods, coords); 
+	MPI_Comm_size(ioParams->cartcomm, &size);
+	MPI_Comm_rank(ioParams->cartcomm, &rank);
+	MPI_Cart_get(ioParams->cartcomm, NDIM, dims, periods, coords); 
 	MPI_Info info  = MPI_INFO_NULL; 
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"After MPI stuff \n"); 
@@ -50,9 +50,9 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	 */ 
 	for (i = 0; i < NDIM; i++)
 	{
-		dimsf[i] = (size_t) arraygsize[i]; 
-		count[i] = (size_t) arraysubsize[i]; 
-		offset[i] = (size_t) arraystart[i]; 
+		dimsf[i]	= ioParams->globalArray[i]; 
+		count[i]	= ioParams->localArray[i]; 
+		offset[i] =	ioParams->arrayStart[i]; 
 	}
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"Initialise dimsf, count, offset\n"); 
@@ -62,7 +62,7 @@ void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraysta
 	 * Set up file access property list with parallel I/O access
 	 */
 	plist_id = H5Pcreate(H5P_FILE_ACCESS); 
-	H5Pset_fapl_mpio(plist_id, cartcomm, info);
+	H5Pset_fapl_mpio(plist_id, ioParams->cartcomm, info);
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"File access property\n"); 
 #endif 

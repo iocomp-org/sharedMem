@@ -16,17 +16,6 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
     fprintf(ioParams->debug, "fileWrite-> IO rank %i Writing to filename = %s loopCounter %i WindowNum %i\n", ioRank, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], loopCounter[windowNum], windowNum);
 #endif 
 
-	// convert size_t array parameters to int arrays using MPI and HDF5 
-	int localArray[NDIM]; 
-	int globalArray[NDIM]; 
-	int arrayStart[NDIM]; 
-	for(int i = 0; i < NDIM; i++)
-	{
-		localArray[i] = (int)ioParams->localArray[i]; 
-		globalArray[i] = (int)ioParams->globalArray[i]; 
-		arrayStart[i] = (int)ioParams->arrayStart[i]; 
-	}
-
 	printf("Before calling adios2 \n"); 
 
 	
@@ -37,7 +26,7 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 			mpiiowrite(iodata,ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
 		case(1): 
-			phdf5write(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			phdf5write(iodata,ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
 		case(2): case(3): case(4): 
 			adioswrite(iodata, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 

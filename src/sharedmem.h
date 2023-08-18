@@ -129,9 +129,9 @@ int valueCheck(struct params *ioParams, double* iodata_test, double val, int win
 void initDebugFile(struct params* ioParams, int globalRank); 
 
 // Writing functions 
-void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams ); 
-void adioswrite(double* iodata, char* FILENAME,  struct params *ioParams); 
-void phdf5write(double* iodata, int*arraysubsize, int* arraygsize, int* arraystart, MPI_Comm cartcomm, char* FILENAME,  struct params* ioParams); 
+void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams);
+void adioswrite(double* iodata, char* FILENAME, struct params *ioParams); 
+void phdf5write(double* iodata, char* FILENAME, struct params* ioParams); 
 
 // Reading functions 
 void mpiRead(double *readData, char* FILENAME,  struct params *iocompParams); 
