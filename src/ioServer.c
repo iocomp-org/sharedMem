@@ -195,20 +195,6 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 
 #ifdef IOBW
 	// print out timers by reducing all the variables to get the maximum value 
-	FILE* out;
-	// initialise file object 
-	if(!ioRank)
-	{
-		remove(FILENAME);
-		out = fopen(FILENAME, "w+");
-		if (out == NULL)
-		{
-			printf("Error: No output file\n");
-			exit(1);
-		}
-		// header for print statements
-		fprintf(out,"Loop_number,Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
-	} 
 
 	// MPI reduction of writeTime array over all IO ranks 
 	for(int i = 0; i < NUM_WIN; i++)
@@ -227,6 +213,18 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	// ioRank = 0 writes stats to output file 
 	if(!ioRank)
 	{
+    // initialise and declare file object 
+    FILE* out;
+    
+		remove(FILENAME);
+		out = fopen(FILENAME, "w+");
+		if (out == NULL)
+		{
+			printf("Error: No output file\n");
+			exit(1);
+		}
+		// header for print statements
+		fprintf(out,"Loop_number,Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
 		for(int j = 0; j < AVGLOOPCOUNT; j ++)
 		{
 			for(int i = 0; i < NUM_WIN; i++)
