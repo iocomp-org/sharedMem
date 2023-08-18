@@ -6,14 +6,14 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	ioParams->writeTime_start = MPI_Wtime(); 
 #ifndef NDEBUG 
 	fprintf(ioParams->debug, "fileWrite->Before writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n",windowNum, 
-	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
+			loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
 #endif
-	
+
 #ifndef NDEBUG
-		int ioRank; 
-		MPI_Comm_rank(ioParams->ioComm, &ioRank); 
-    fprintf(ioParams->debug, "fileWrite-> IO rank %i Writing to filename = %s loopCounter %i WindowNum %i\n", ioRank, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], loopCounter[windowNum], windowNum);
+	int ioRank; 
+	MPI_Comm_rank(ioParams->ioComm, &ioRank); 
+	fprintf(ioParams->debug, "fileWrite-> IO rank %i Writing to filename = %s loopCounter %i WindowNum %i\n", ioRank, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], loopCounter[windowNum], windowNum);
 #endif 
 
 	// call io libraries 
@@ -42,7 +42,7 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 	ioParams->winTime[windowNum][loopCounter[windowNum]] = ioParams->winTime_end[windowNum] - ioParams->winTime_start[windowNum]; 
 #ifndef NDEBUG 
 	fprintf(ioParams->debug, "fileWrite->After writing window:%i loopCounter %i, writeTime %lf, winTime %lf \n", windowNum, 
-	loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
+			loopCounter[windowNum], ioParams->writeTime[windowNum][loopCounter[windowNum]], ioParams->winTime[windowNum][loopCounter[windowNum]]); 
 #endif 
 #endif 
 	// increment loopCounter after filewrite complete 

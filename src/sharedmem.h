@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>  
 #include <adios2_c.h>
-#include <adios2/c/adios2_c_adios.h> 
 #include <adios2/c/adios2_c_types.h>
 
 // define number of shared memory windows 

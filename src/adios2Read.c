@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <adios2_c.h>
-#include <adios2/c/adios2_c_adios.h> 
-#include <adios2/c/adios2_c_types.h>
 #include "sharedmem.h"
 #define config_file "config.xml"
 
@@ -16,7 +14,12 @@ void adios2Read(double* readData, char* FILENAME, struct params *iocompParams)
 	iocompParams->ADIOS2_IOENGINES[2] = "BP5";
 
 	// adios2_adios *adios = adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
-	adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
+#if ADIOS2_USE_MPI
+		// adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
+    iocompParams->adios = adios2_init_mpi(ioParams->cartcomm);  
+#else 
+    iocompParams->adios = adios2_init();  
+#endif 
 
 	// iocompParams->adios = adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
 	iocompParams->io = adios2_declare_io(iocompParams->adios, 
