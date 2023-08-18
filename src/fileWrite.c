@@ -16,9 +16,6 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
     fprintf(ioParams->debug, "fileWrite-> IO rank %i Writing to filename = %s loopCounter %i WindowNum %i\n", ioRank, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], loopCounter[windowNum], windowNum);
 #endif 
 
-	printf("Before calling adios2 \n"); 
-
-	
 	// call io libraries 
 	switch(ioParams->ioLibNum)
 	{
