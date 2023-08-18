@@ -1,26 +1,32 @@
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <adios2_c.h>
 #include <adios2/c/adios2_c_adios.h> 
 #include <adios2/c/adios2_c_types.h>
 #include "sharedmem.h"
-#define config_file "config.xml"
+#define CONFIG_FILE_ADIOS2 "config.xml"
 
 
 void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 {   
 	adios2_error errio; 
+	adios2_adios *ierr; 
+
+	printf("called adios2 \n"); 
 
 	ioParams->ADIOS2_IOENGINES[0] = "HDF5"; 
 	ioParams->ADIOS2_IOENGINES[1] = "BP4"; 
 	ioParams->ADIOS2_IOENGINES[2] = "BP5";
 
-	// adios2_adios *adios = adios2_init_config_mpi(config_file, ioParams->cartcomm); 
-	adios2_init_config_mpi(config_file, ioParams->cartcomm); 
+	// ierr = adios2_init_mpi(ioParams->cartcomm); 
+	ierr = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);		
+	assert(ierr!=NULL); 
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->config file read \n");
 #endif
 	
+	printf("config file \n"); 
 	// declare I/O engine, subtract 2 as ADIOS2 starts from ioLibNum=2 
 	ioParams->io = adios2_declare_io(ioParams->adios, 
 			ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); //IO handler declaration

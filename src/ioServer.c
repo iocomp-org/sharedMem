@@ -199,8 +199,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	// MPI reduction of writeTime array over all IO ranks 
 	for(int i = 0; i < NUM_WIN; i++)
 	{
-		MPI_Reduce(ioParams->writeTime[i], ioParams->writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
-		MPI_Reduce(ioParams->winTime[i], ioParams->winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
+		ierr = MPI_Reduce(ioParams->writeTime[i], ioParams->writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
+		error_check(ierr); 
+		ierr = MPI_Reduce(ioParams->winTime[i], ioParams->winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
+		error_check(ierr); 
 	}
 
 	// calculate file size for B/W calculation 

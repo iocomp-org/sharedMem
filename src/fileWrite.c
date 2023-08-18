@@ -26,12 +26,15 @@ void fileWrite(struct params *ioParams, double* iodata, int* loopCounter, int wi
 		globalArray[i] = (int)ioParams->globalArray[i]; 
 		arrayStart[i] = (int)ioParams->arrayStart[i]; 
 	}
+
+	printf("Before calling adios2 \n"); 
+
 	
 	// call io libraries 
 	switch(ioParams->ioLibNum)
 	{
 		case(0): 
-			mpiiowrite(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
+			mpiiowrite(iodata,ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
 			break; 
 		case(1): 
 			phdf5write(iodata, localArray, globalArray, arrayStart, ioParams->cartcomm, ioParams->WRITEFILE[windowNum][loopCounter[windowNum]], ioParams); 
