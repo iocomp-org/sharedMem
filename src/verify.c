@@ -63,9 +63,9 @@ void verify(struct params *ioParams)
 				case(1):
 					phdf5Read(readData, FILENAME, ioParams); 
 					break; 
-				//case(2): case(3): case(4):
-				//	adios2Read(readData, FILENAME, ioParams); 
-				//	break; 
+				case(2): case(3): case(4):
+					adios2Read(readData, FILENAME, ioParams); 
+					break; 
 				default:
 					break; 
 			} 
