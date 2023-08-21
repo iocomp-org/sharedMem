@@ -120,8 +120,8 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
     * Initialisations 
     */ 
 		printf("adios2 start \n"); 
-    // adios2_adios *adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
 #if ADIOS2_USE_MPI
+    // adios2_adios *adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
     adios2_adios *adios = adios2_init_mpi(ioParams->cartcomm);  
 #else 
     adios2_adios *adios = adios2_init();  
@@ -148,8 +148,7 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 
 		printf("filename %s \n", FILENAME); 
 
-		// adios2_engine *engine = adios2_open(io, FILENAME, adios2_mode_write);
-		adios2_engine *engine = adios2_open(io, "helloworld.bp", adios2_mode_write);
+		adios2_engine *engine = adios2_open(io, FILENAME, adios2_mode_write);
 		printf("adios2 engine \n"); 
 
     adios2_step_status status; 

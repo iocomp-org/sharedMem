@@ -1,5 +1,5 @@
 CC=cc 
-CFLAGS= -fPIC -O2 -Wall -Wpedantic -Werror -Wextra # -DADIOS2_USE_MPI 
+CFLAGS= -fPIC -O2 -Wall -Wpedantic -Werror -Wextra -DADIOS2_USE_MPI 
 CFLAGS+= -DNODELETE # -DVERIFY #-DNDEBUG #-DNODELETE -DIOBW
 
 ODIR = Object_files
@@ -12,7 +12,7 @@ DEPS=sharedmem.h
 
 MAIN=sharedmem 
 
-SRCS = main.c ioServer.c compServer.c initialise.c  mpiWrite.c arrayParamsInit.c verify.c  fileNameInit.c fileWrite.c hdf5Write.c deleteFiles.c  mpiRead.c valueCheck.c checks.c initDebugFile.c winAlloc.c hdf5Read.c  adios2Write.c  adios2Read.c 
+SRCS = main.c ioServer.c compServer.c initialise.c  mpiWrite.c arrayParamsInit.c verify.c  fileNameInit.c fileWrite.c hdf5Write.c deleteFiles.c  mpiRead.c valueCheck.c checks.c initDebugFile.c winAlloc.c hdf5Read.c  adios2Write.c # adios2Read.c 
 
 _OBJS = $(SRCS:.c=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))

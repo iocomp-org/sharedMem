@@ -16,7 +16,7 @@ void adios2Read(double* readData, char* FILENAME, struct params *iocompParams)
 	// adios2_adios *adios = adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
 #if ADIOS2_USE_MPI
 		// adios2_init_config_mpi(config_file, iocompParams->cartcomm); 
-    iocompParams->adios = adios2_init_mpi(ioParams->cartcomm);  
+    iocompParams->adios = adios2_init_mpi(iocompParams->cartcomm);  
 #else 
     iocompParams->adios = adios2_init();  
 #endif 
