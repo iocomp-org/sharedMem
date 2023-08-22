@@ -118,12 +118,16 @@ int main(int argc, char** argv)
 	{
 		ioServer(ioComm, newComm,&ioParams); 
 	} 
-	
-	MPI_Finalize();
+		
 	//close debug file object 
+#ifndef NDEBUG 
+	fprintf(ioParams.debug, "Before MPI finalised \n"); 
+#endif 
 #ifndef NDEBUG 
 	fclose(ioParams.debug); 
 #endif 
+
+	MPI_Finalize();
 	return 0;
 } 
 

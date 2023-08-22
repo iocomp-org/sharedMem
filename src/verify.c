@@ -73,6 +73,14 @@ void verify(struct params *ioParams)
 			// verify data by checking value by value with STREAM code   
 			int test = valueCheck(ioParams, readData, val, windowNum, iter); 
 			int test_reduced;  
+#ifndef NDEBUG   
+					fprintf(ioParams->debug,"Verification failed, data read: \n"); 
+					for(int i = 0; i < ioParams->localDataSize; i++)
+					{
+						fprintf(ioParams->debug,"%lf, ", readData[i]); 
+					}
+					fprintf(ioParams->debug,"\n"); 
+#endif       
 
 			// sync all values of test, if multiplication comes back as 0 it means
 			// verification failed by a particular rank 
@@ -90,7 +98,7 @@ void verify(struct params *ioParams)
 			}
 		} 
 	} 
-
+	
 	free(readData); 
 	readData = NULL; 
 #ifndef NDEBUG   

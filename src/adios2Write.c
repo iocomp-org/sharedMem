@@ -112,5 +112,5 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 	fprintf(ioParams->debug, "adios2Write->engine closed \n");
 #endif
 
-	adios2_finalize(ioParams->adios);
+	// adios2_finalize(ioParams->adios);
 } 
