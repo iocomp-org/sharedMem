@@ -76,7 +76,7 @@ void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 		fprintf(ioParams->debug, "adios2Write->variable defined \n");
 #endif
 	}
-				
+	adios2_variable *iodata_read; 
 	adios2_engine *engine = adios2_open(ioParams->io, FILENAME, adios2_mode_read);
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->engine opened \n");
@@ -88,8 +88,11 @@ void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 	fprintf(ioParams->debug, "adios2Write->begin step \n");
 #endif
 	
+	iodata_read = adios2_inquire_variable(ioParams->io, "iodata"); 
+	assert(iodata_read != NULL); 
+
 	assert(ioParams->var_iodata!= NULL); 
-	errio = adios2_get(engine,ioParams->var_iodata, iodata, adios2_mode_deferred);
+	errio = adios2_get(engine,iodata_read, iodata, adios2_mode_deferred);
 	error_check(errio); 
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->writing completed \n");
