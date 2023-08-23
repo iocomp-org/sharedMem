@@ -238,6 +238,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 				} 
 			} 
 		} 
+#ifndef NDEBUG 
+		fprintf(ioParams->debug, "ioServer->Stats written \n",i); 
+#endif 
 		// fclose(out); 	
 	}
 #endif 
@@ -249,9 +252,20 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		printf("Verification started \n"); 
 	}
 	verify(ioParams); 
+#ifndef NDEBUG 
+		fprintf(ioParams->debug, "ioServer->verification over\n" ); 
+#endif 
 #endif
-
+	MPI_Barrier(ioParams->ioComm); 
+	
 #ifndef NODELETE
-	deleteFiles(ioParams); 
+		MPI_Barrier(ioParams->ioComm); 
+		if(!ioRank)
+		{
+			deleteFiles(ioParams); 
+#ifndef NDEBUG 
+			fprintf(ioParams->debug, "ioServer->file/directory deleted \n"); 
+#endif	
+		} 
 #endif 
 } 

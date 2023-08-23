@@ -9,6 +9,9 @@
 #include "sharedmem.h"
 #define DATASETNAME "IntArray"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 void phdf5Read(double *readData, char* fileName, struct params *ioParams) 
 {   
 
@@ -84,6 +87,10 @@ void phdf5Read(double *readData, char* fileName, struct params *ioParams)
 	ierr = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
 			xfer_plist, readData);					    
 	assert(ierr!= H5I_INVALID_HID); 
+	if( ierr == H5I_INVALID_HID)
+	{
+		printf("ierr %i \n", ierr); 
+	} 
 
 #ifndef NDEBUG 
 	fprintf(ioParams->debug,"File read data output\n"); 
@@ -102,3 +109,4 @@ void phdf5Read(double *readData, char* fileName, struct params *ioParams)
 	H5Fclose(file);
 
 } 
+#pragma GCC diagnostic pop

@@ -29,8 +29,6 @@ void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 	 * adios2 object declared before loop entered
 	 * only when ioLib chosen is adios2 and one of its engines 
 	 */ 
-	if(ioParams->ioLibNum >=2 && ioParams->ioLibNum <= 4)
-	{
 #if ADIOS2_USE_MPI
     ioParams->adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
 #else 
@@ -40,16 +38,17 @@ void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 		fprintf(ioParams->debug, "config \n "); 
 #endif
 		assert(ioParams->adios != NULL); 
+
 #ifndef NDEBUG
 		fprintf(ioParams->debug, "filename is %s , adios2 engine is %s \n", FILENAME, ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2] ); 
 #endif
+
 		ioParams->io = adios2_declare_io(ioParams->adios, 
 				ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); //IO handler declaration
 		assert(ioParams->io != NULL); 
 #ifndef NDEBUG
 		fprintf(ioParams->debug, "adios declared \n "); 
 #endif
-	} 
 
 	/* 
 	 * Assert tests to check for negative values 
@@ -66,32 +65,24 @@ void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->adios2Init flag %i \n", ioParams->adios2Init);
 #endif
-	if(!ioParams->adios2Init) // check if declared before so that adios2 variable is not defined again. 
-	{
-		fprintf(ioParams->debug, "adios2 variable definition \n"); 
-//		ioParams->var_iodata = adios2_define_variable(ioParams->io, "iodata", adios2_type_double,NDIM,
-//				ioParams->globalArray, ioParams->arrayStart, ioParams->localArray, adios2_constant_dims_true); 
-//		ioParams->adios2Init = 1;  
-#ifndef NDEBUG
-		fprintf(ioParams->debug, "adios2Write->variable defined \n");
-#endif
-	}
 	adios2_variable *iodata_read; 
+				
 	adios2_engine *engine = adios2_open(ioParams->io, FILENAME, adios2_mode_read);
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->engine opened \n");
 #endif
 	
 	adios2_step_status status; 
-	errio = adios2_begin_step(engine, adios2_step_mode_read, -1, &status);   
+	errio = adios2_begin_step(engine, adios2_step_mode_read, -1., &status);   
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->begin step \n");
 #endif
-	
+
 	iodata_read = adios2_inquire_variable(ioParams->io, "iodata"); 
 	assert(iodata_read != NULL); 
 
 	assert(ioParams->var_iodata!= NULL); 
+
 	errio = adios2_get(engine,iodata_read, iodata, adios2_mode_deferred);
 	error_check(errio); 
 #ifndef NDEBUG

@@ -3,6 +3,8 @@
  * function recieves pointer array, copies this into allocated shared memory
  * array 
  */ 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 struct winElements winAlloc(int len, MPI_Comm newComm, struct params *ioParams)
 {
 	int soi = sizeof(double); 
@@ -39,3 +41,4 @@ void dataSendComplete(MPI_Win win, struct params *ioParams)
 	error_check(ierr); 
 } 
 
+#pragma GCC diagnostic pop
