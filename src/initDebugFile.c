@@ -4,6 +4,7 @@
 #include <errno.h>
 #include "sharedmem.h"
 
+#ifndef NDEBUG
 void initDebugFile(struct params* ioParams,int globalRank)
 {
 	strcpy(ioParams->debugFile,"DEBUG_Rank_"); 
@@ -26,3 +27,4 @@ void initDebugFile(struct params* ioParams,int globalRank)
 		printf("Value of errno: %d\n", errno);
 	}
 } 
+#endif 

@@ -69,10 +69,12 @@ struct params
 	int ioLibNum; 
 	// filenames 
 	char WRITEFILE[NUM_WIN][AVGLOOPCOUNT][100]; 
-	char debugFile[100]; 
 
 	// file object for debug 
+#ifndef NDEBUG
+	char debugFile[100]; 
 	FILE* debug; 
+#endif 
 
 	// rank and size 
 	int globalRank, globalSize; 

@@ -68,7 +68,9 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 #endif
 	if(!ioParams->adios2Init) // check if declared before so that adios2 variable is not defined again. 
 	{
+#ifndef NDEBUG
 		fprintf(ioParams->debug, "adios2 variable definition \n"); 
+#endif
 		ioParams->var_iodata = adios2_define_variable(ioParams->io, "iodata", adios2_type_double,NDIM,
 				ioParams->globalArray, ioParams->arrayStart, ioParams->localArray, adios2_constant_dims_true); 
 		ioParams->adios2Init = 1;  
