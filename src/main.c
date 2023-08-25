@@ -49,8 +49,8 @@ int main(int argc, char** argv)
 	if(!globalRank)
 	{
 		double problemSize = ioParams.localDataSize*8/(pow(2,20)); // MiB 
-		printf("Shared memory demonstrator with local problem size=%lfMiB, number of windows=%i, number of ranks=%i, I/O library=%i\n", 
-		problemSize, NUM_WIN, globalSize, ioParams.ioLibNum); 
+		printf("Shared memory demonstrator with local problem size=%lfMiB, number of windows=%i, number of ranks=%i, I/O library=%i, average count=%i\n", 
+		problemSize, NUM_WIN, globalSize, ioParams.ioLibNum, AVGLOOPCOUNT); 
 	} 
 
 	/*
