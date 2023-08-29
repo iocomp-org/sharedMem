@@ -275,7 +275,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		MPI_Reduce(&ioParams->compTimer[i],&ioParams->compTimer_max[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 		MPI_Reduce(&ioParams->compTimer[i],&ioParams->compTimer_min[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MIN, 0,computeComm); 
 	}
-
+	
+	// print out the different timers, along with GB/s to output file 
 	if(!computeRank)
 	{
 		compPrints(ioParams); 

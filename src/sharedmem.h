@@ -22,8 +22,9 @@
 
 // define window control integers 
 #define WIN_DEACTIVATE 0 
-#define WIN_ACTIVATE 1 
-#define WIN_WAIT 2
+#define WIN_TEST 1
+#define WIN_ACTIVATE 2 
+#define WIN_WAIT 3
 #define WIN_FREE -1
 
 // define STREAM array windows 
@@ -72,6 +73,11 @@ struct params
 	int ioLibNum; 
 	// filenames 
 	char WRITEFILE[NUM_WIN][AVGLOOPCOUNT][100]; 
+	// shared window pointers 
+	MPI_Win win_ptr[NUM_WIN]; 
+
+	// initialise flag variable to test for window completion
+	int flagReturn[NUM_WIN];
 
 	// file object for debug 
 #ifndef NDEBUG
@@ -139,6 +145,7 @@ int valueCheck(struct params *ioParams, double* iodata_test, double val, int win
 void initDebugFile(struct params* ioParams, int globalRank); 
 void ioServerInitialise(struct params *ioParams); 
 void compPrints(struct params *ioParams); 
+void winTest(struct params *ioParams,double* array, int windowNum, int* loopCounter); 
 
 // Writing functions 
 void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams);
