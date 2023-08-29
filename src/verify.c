@@ -8,6 +8,7 @@
 
 void verify(struct params *ioParams)
 {
+	MPI_Barrier(ioParams->ioComm); 
 	int myRank;
 	MPI_Comm_rank(ioParams->ioComm, &myRank); 
 
@@ -104,6 +105,7 @@ void verify(struct params *ioParams)
 #ifndef NDEBUG   
 	fprintf(ioParams->debug,"iodata test freed\n"); 
 #endif       
+	MPI_Barrier(ioParams->ioComm); 
 
 } 
 

@@ -10,7 +10,6 @@
 #include <assert.h> 
 #include <math.h>
 #include "sharedmem.h"
-#define FILENAME "ioserver_output.csv"
 
 void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 {
@@ -183,68 +182,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	adios2_finalize(ioParams->adios);
 
 #ifdef IOBW
-	// print out timers by reducing all the variables to get the maximum value 
-
-	// MPI reduction of writeTime array over all IO ranks 
-	for(int i = 0; i < NUM_WIN; i++)
-	{
-		ierr = MPI_Reduce(ioParams->writeTime[i], ioParams->writeTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
-		error_check(ierr); 
-		ierr = MPI_Reduce(ioParams->winTime[i], ioParams->winTime_max[i], AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0, ioParams->ioComm); 
-		error_check(ierr); 
-	}
-
-	// calculate file size for B/W calculation 
-	ioParams->fileSize = sizeof(double); 
-	for(int i = 0; i < NDIM; i++)
-	{
-		ioParams->fileSize *= ioParams->localArray[i]; 
-	}
-
-	// ioRank = 0 writes stats to output file 
-	if(!ioRank)
-	{
-    // initialise and declare file object 
-    FILE* out;
-    
-		remove(FILENAME);
-		out = fopen(FILENAME, "w+");
-		if (out == NULL)
-		{
-			printf("Error: No output file\n");
-			exit(1);
-		}
-		// header for print statements
-		fprintf(out,"Loop_number,Window_Number,Window_Time(s),Write_Time(s),IO_BW(GB/s)\n"); 
-		for(int j = 0; j < AVGLOOPCOUNT; j ++)
-		{
-			for(int i = 0; i < NUM_WIN; i++)
-			{
-				if(ioParams->writeTime_max[i][j] > 0.0)
-				{
-					fprintf(out,"%i,%i,%.3f,%.3f,%.3f \n",j,i,ioParams->winTime_max[i][j],ioParams->writeTime_max[i][j],
-							(1.0E-09*ioParams->fileSize/ioParams->writeTime_max[i][j]) ); 
-				} 
-			} 
-		} 
-#ifndef NDEBUG 
-		fprintf(ioParams->debug, "ioServer->Stats written \n",i); 
-#endif 
-		fclose(out); 	
-	}
+	iobw(ioParams); 
 #endif 
 
 #ifdef VERIFY
-	MPI_Barrier(ioParams->ioComm); 
 	if(!ioRank)
 	{
 		printf("Verification started \n"); 
 	}
 	verify(ioParams); 
-#ifndef NDEBUG 
-		fprintf(ioParams->debug, "ioServer->verification over\n" ); 
-#endif 
-	MPI_Barrier(ioParams->ioComm); 
 #endif
 	
 #ifndef NODELETE

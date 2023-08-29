@@ -8,7 +8,6 @@
 void iobw(struct params *ioParams)
 {
 	// print out timers by reducing all the variables to get the maximum value 
-	//
 	int ioRank, ierr; 
 	ierr = MPI_Comm_rank(ioParams->ioComm, &ioRank); 
 	error_check(ierr); 
