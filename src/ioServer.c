@@ -198,15 +198,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	}
 	verify(ioParams); 
 #endif
-	
+
 #ifndef NODELETE
-		MPI_Barrier(ioParams->ioComm); 
-		if(!ioRank)
-		{
-			deleteFiles(ioParams); 
+	MPI_Barrier(ioParams->ioComm); 
+	if(!ioRank)
+	{
+		deleteFiles(ioParams); 
 #ifndef NDEBUG 
-			fprintf(ioParams->debug, "ioServer->file/directory deleted \n"); 
+		fprintf(ioParams->debug, "ioServer->file/directory deleted \n"); 
 #endif	
-		} 
+	} 
 #endif 
 } 
