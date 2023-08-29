@@ -1,8 +1,9 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdlib.h>
-#include "stdio.h"
-#include "mpi.h"
+#include <assert.h>
+#include <stdio.h>
+#include <mpi.h>
 #include "sharedmem.h"
 #define config_file "config.xml"
 
@@ -52,37 +53,45 @@ void ioServerInitialise(struct params *ioParams)
 	ierr = MPI_Cart_coords(ioParams->cartcomm, ioRank, NDIM, coords);
 	error_check(ierr);
 
-	///*	
-	// * Initiliase filename 
-	// */ 
-	//ioParams->FILENAMES[0] = "mpiio.dat"; 
-	//ioParams->FILENAMES[1] = "hdf5.h5"; 
-	//ioParams->FILENAMES[2] = "adios2.h5";
-	//ioParams->FILENAMES[3] = "adios2.bp4";
-	//ioParams->FILENAMES[4] = "adios2.bp5"; 
-	///*
-	// * Initialise adios2 engines list  
-	// */ 
-	//ioParams->ADIOS2_IOENGINES[0] = "HDF5"; 
-	//ioParams->ADIOS2_IOENGINES[1] = "BP4"; 
-	//ioParams->ADIOS2_IOENGINES[2] = "BP5";
-
 	/*
-	 * adios2 object declared before loop entered
 	 * only when ioLib chosen is adios2 and one of its engines 
 	 */ 
 	if(ioParams->ioLibNum >=2 && ioParams->ioLibNum <= 4)
 	{
-		ioParams->adios = adios2_init_config_mpi(config_file, ioParams->cartcomm); 
+		/*
+		 * Initialise adios2 engines list  
+		 */ 
+		ioParams->ADIOS2_IOENGINES[0] = "HDF5"; 
+		ioParams->ADIOS2_IOENGINES[1] = "BP4"; 
+		ioParams->ADIOS2_IOENGINES[2] = "BP5";
+
+		/*
+		 * ADIOS2 initialise engine and IO object 
+		 */ 
+#if ADIOS2_USE_MPI
+		ioParams->adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
+#else 
+		adios2_adios *adios = adios2_init();  
+#endif 
+		assert(ioParams->adios != NULL); 
+
+#ifndef NDEBUG
+		fprintf(ioParams->debug, "ADIOS2 initialised, filename is %s , adios2 engine is %s \n", FILENAME, ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2] ); 
+#endif
+
 		ioParams->io = adios2_declare_io(ioParams->adios, 
 				ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); //IO handler declaration
+		assert(ioParams->io != NULL); 
+#ifndef NDEBUG
+		fprintf(ioParams->debug, "ADIOS2 I/O declared \n "); 
+#endif
 	} 
 
 	/*
 	 * Initialise previous initialisation and element counter flag
 	 */ 
-//	ioParams->previousInit = 0;  
-//	ioParams->previousCount = 0;  
-//	ioParams->adios2Init = 0;  
+	//	ioParams->previousInit = 0;  
+	//	ioParams->previousCount = 0;  
+	ioParams->adios2Init = 0;  
 } 
 

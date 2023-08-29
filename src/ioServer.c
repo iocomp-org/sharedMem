@@ -30,7 +30,8 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 
 	// Allocate cartesian communicator, adios2 objects	
 	ioServerInitialise(ioParams); 
-	
+
+	// Initialise array parameters for each process write into a global file  
 	arrayParamsInit(ioParams); 
 
 	// allocate shared windows 
@@ -178,6 +179,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		error_check(ierr); 
 	} 
 
+	// Finalise ADIOS2 objects
+	adios2_finalize(ioParams->adios);
+
 #ifdef IOBW
 	// print out timers by reducing all the variables to get the maximum value 
 
@@ -226,7 +230,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "ioServer->Stats written \n",i); 
 #endif 
-		// fclose(out); 	
+		fclose(out); 	
 	}
 #endif 
 
@@ -240,8 +244,8 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "ioServer->verification over\n" ); 
 #endif 
-#endif
 	MPI_Barrier(ioParams->ioComm); 
+#endif
 	
 #ifndef NODELETE
 		MPI_Barrier(ioParams->ioComm); 

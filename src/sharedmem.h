@@ -35,6 +35,9 @@
 #define SCALAR 5 
 #define STARTING_VAL 1
 
+// adios2 config file 
+#define CONFIG_FILE_ADIOS2 "config.xml"
+
 /*
  * Header file for declaring the error_report_fn and macro error_report which simplifies calling.
  */

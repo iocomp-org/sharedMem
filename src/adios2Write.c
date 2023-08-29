@@ -7,50 +7,8 @@
 #endif 
 #include "sharedmem.h"
 
-#define CONFIG_FILE_ADIOS2 "config.xml"
-
 void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 {
-
-	/*
-	 * Initialise adios2 engines list  
-	 */ 
-	ioParams->ADIOS2_IOENGINES[0] = "HDF5"; 
-	ioParams->ADIOS2_IOENGINES[1] = "BP4"; 
-	ioParams->ADIOS2_IOENGINES[2] = "BP5";
-
-	// check cartcomm 
-	int rank, size; 
-	MPI_Comm_rank(ioParams->cartcomm, &rank);
-	MPI_Comm_size(ioParams->cartcomm, &size);
-
-
-	/*
-	 * adios2 object declared before loop entered
-	 * only when ioLib chosen is adios2 and one of its engines 
-	 */ 
-	if(ioParams->ioLibNum >=2 && ioParams->ioLibNum <= 4)
-	{
-#if ADIOS2_USE_MPI
-    ioParams->adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
-#else 
-    adios2_adios *adios = adios2_init();  
-#endif 
-#ifndef NDEBUG
-		fprintf(ioParams->debug, "config \n "); 
-#endif
-		assert(ioParams->adios != NULL); 
-#ifndef NDEBUG
-		fprintf(ioParams->debug, "filename is %s , adios2 engine is %s \n", FILENAME, ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2] ); 
-#endif
-		ioParams->io = adios2_declare_io(ioParams->adios, 
-				ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); //IO handler declaration
-		assert(ioParams->io != NULL); 
-#ifndef NDEBUG
-		fprintf(ioParams->debug, "adios declared \n "); 
-#endif
-	} 
-
 	/* 
 	 * Assert tests to check for negative values 
 	 */ 
@@ -60,8 +18,6 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 		assert(ioParams->globalArray[i] > 0); 
 	}
 	adios2_error errio; 
-
-	ioParams->adios2Init = 0; 
 
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->adios2Init flag %i \n", ioParams->adios2Init);
@@ -113,6 +69,4 @@ void adioswrite(double* iodata, char* FILENAME, struct params *ioParams)
 #ifndef NDEBUG
 	fprintf(ioParams->debug, "adios2Write->engine closed \n");
 #endif
-
-	// adios2_finalize(ioParams->adios);
 } 
