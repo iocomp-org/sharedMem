@@ -55,7 +55,7 @@ void iobw(struct params *ioParams)
 			} 
 		} 
 #ifndef NDEBUG 
-		fprintf(ioParams->debug, "ioServer->Stats written \n",i); 
+		fprintf(ioParams->debug, "ioServer->Stats written \n"); 
 #endif 
 		fclose(out); 	
 	}

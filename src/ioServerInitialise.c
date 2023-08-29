@@ -76,7 +76,7 @@ void ioServerInitialise(struct params *ioParams)
 		assert(ioParams->adios != NULL); 
 
 #ifndef NDEBUG
-		fprintf(ioParams->debug, "ADIOS2 initialised, filename is %s , adios2 engine is %s \n", FILENAME, ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2] ); 
+		fprintf(ioParams->debug, "ADIOS2 initialised, adios2 engine is %s \n", ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2] ); 
 #endif
 
 		ioParams->io = adios2_declare_io(ioParams->adios, 
