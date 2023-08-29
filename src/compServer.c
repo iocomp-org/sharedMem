@@ -5,7 +5,6 @@
 #include <assert.h> 
 #include "sharedmem.h"
 
-#define FILENAME "compserver_output.csv"
 
 void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, struct params *ioParams)
 {
@@ -29,16 +28,13 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	} 
 
 	// declare and initialise timers for NUM WIN = 3 and start wall Time
-	double compTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
 	double wallTime = MPI_Wtime(); 
-
-	FILE* out; 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
 		for(int j = 0; j < AVGLOOPCOUNT; j++)
 		{
-			compTimer[i][j] = 0.0; 
+			ioParams->compTimer[i][j] = 0.0; 
 		}
 	}
 
@@ -168,7 +164,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-		compTimer[SCALE][iter] = MPI_Wtime(); 
+		ioParams->compTimer[SCALE][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_B); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After win start for B\n"); 
@@ -180,7 +176,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		}
 
 		MPI_Win_complete(win_B); 
-		compTimer[SCALE][iter] = MPI_Wtime() - compTimer[SCALE][iter]; 
+		ioParams->compTimer[SCALE][iter] = MPI_Wtime() - ioParams->compTimer[SCALE][iter]; 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After mpi window unlock for B \n"); 
 #endif 
@@ -202,7 +198,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-		compTimer[ADD][iter] = MPI_Wtime(); 
+		ioParams->compTimer[ADD][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_C); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After win start for C \n"); 
@@ -214,7 +210,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		}
 
 		MPI_Win_complete(win_C); 
-		compTimer[ADD][iter] = MPI_Wtime() - compTimer[ADD][iter]; 
+		ioParams->compTimer[ADD][iter] = MPI_Wtime() - ioParams->compTimer[ADD][iter]; 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After mpi complete for C \n"); 
 #endif 
@@ -238,7 +234,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
 #endif 
 
-		compTimer[TRIAD][iter] = MPI_Wtime(); 
+		ioParams->compTimer[TRIAD][iter] = MPI_Wtime(); 
 		MPI_Win_start(group, 0, win_A); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After mpi start for A \n"); 
@@ -250,7 +246,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		}
 
 		MPI_Win_complete(win_A); 
-		compTimer[TRIAD][iter] = MPI_Wtime() - compTimer[TRIAD][iter]; 
+		ioParams->compTimer[TRIAD][iter] = MPI_Wtime() - ioParams->compTimer[TRIAD][iter]; 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> After mpi complete for A \n"); 
 #endif 
@@ -272,71 +268,16 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 	wallTime = MPI_Wtime() - wallTime; 
 
-	// reduction over compute time per each compute kernel 
-	double compTimer_max[NUM_KERNELS][AVGLOOPCOUNT]; 
-	double compTimer_min[NUM_KERNELS][AVGLOOPCOUNT]; 
-	double compTimer_avg[NUM_KERNELS]; 
-
-	double wallTime_max; 
-	MPI_Reduce(&wallTime,&wallTime_max,1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+	MPI_Reduce(&wallTime,&ioParams->wallTime_max,1, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
 
 	for(int i = 0; i < NUM_KERNELS; i++)
 	{
-		MPI_Reduce(&compTimer[i],&compTimer_max[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
-		MPI_Reduce(&compTimer[i],&compTimer_min[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MIN, 0,computeComm); 
+		MPI_Reduce(&ioParams->compTimer[i],&ioParams->compTimer_max[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MAX, 0,computeComm); 
+		MPI_Reduce(&ioParams->compTimer[i],&ioParams->compTimer_min[i],AVGLOOPCOUNT, MPI_DOUBLE, MPI_MIN, 0,computeComm); 
 	}
 
 	if(!computeRank)
 	{
-		// stream initialisations 
-		char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
-		// stream data size used in different kernels 
-		double bytes[NUM_KERNELS]; 
-		bytes[COPY]			= 2*ioParams->localDataSize*sizeof(double); 
-		bytes[SCALE]		= 2*ioParams->localDataSize*sizeof(double); 
-		bytes[ADD]			= 3*ioParams->localDataSize*sizeof(double); 
-		bytes[TRIAD]		= 3*ioParams->localDataSize*sizeof(double); 
-
-
-		// calculate max, min, avg across loops across ranks. 
-		double minTime[NUM_KERNELS], maxTime[NUM_KERNELS]; 
-		for(int i = 0; i < NUM_KERNELS; i++)
-		{
-			compTimer_avg[i] = 0.0; 
-			maxTime[i] = compTimer_max[i][0]; 
-			minTime[i] = compTimer_min[i][0]; 
-			for(int j = 0; j < AVGLOOPCOUNT; j++)
-			{
-				compTimer_avg[i] += compTimer_max[i][j]; 
-				if(maxTime[i] < compTimer_max[i][j])
-				{
-					maxTime[i] = compTimer_max[i][j];  
-				} 
-				if(minTime[i] > compTimer_min[i][j])
-				{
-					minTime[i] = compTimer_min[i][j];  
-				} 
-			}
-			compTimer_avg[i] /= AVGLOOPCOUNT; 
-		}
-		
-		remove(FILENAME);
-		out = fopen(FILENAME, "w+");
-		if (out == NULL)
-		{
-			printf("Error: No output file\n");
-			exit(1);
-		}
-		// header for compute output 
-	  fprintf(out,"Function,Best_Rate(GB/s),Avg_time(s),Min_time(s),Max_time(s),Max_Walltime(s)\n");
-
-    for (int i=1; i<NUM_KERNELS; i++) {
-			fprintf(out,"%s,%lf,%lf,%lf,%lf,\n", STREAM_kernels[i],
-	       1.0E-09 * bytes[i]/minTime[i],
-	       compTimer_avg[i],
-	       minTime[i],
-	       maxTime[i]);
-    }
-		fprintf(out,"WALL,,,,,%lf \n", wallTime_max); 
+		compPrints(ioParams); 
 	}
 } 

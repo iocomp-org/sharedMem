@@ -96,6 +96,12 @@ struct params
 	double writeTime_max[NUM_WIN][AVGLOOPCOUNT]; 
 	double fileSize; 
 
+	double compTimer[NUM_KERNELS][AVGLOOPCOUNT]; 
+	double compTimer_max[NUM_KERNELS][AVGLOOPCOUNT]; 
+	double compTimer_min[NUM_KERNELS][AVGLOOPCOUNT]; 
+	double compTimer_avg[NUM_KERNELS]; 
+	double wallTime_max; 
+
 	// communicators 
 	MPI_Comm cartcomm, newComm, ioComm; 
 
@@ -132,6 +138,7 @@ void verify(struct params *ioparams);
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter); 
 void initDebugFile(struct params* ioParams, int globalRank); 
 void ioServerInitialise(struct params *ioParams); 
+void compPrints(struct params *ioParams); 
 
 // Writing functions 
 void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams);
