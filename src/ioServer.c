@@ -14,38 +14,23 @@
 
 void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 {
+
 	// allocate windows 
 	double* array[NUM_WIN]; 
 	MPI_Win win_ptr[NUM_WIN]; 
-	int ierr; 
 	int soi = sizeof(double); 
 
 	// initialise IO Params structure 
 	ioParams->ioComm = ioComm; 
+	int ioRank, ierr; 
+	ierr = MPI_Comm_rank(ioParams->ioComm, &ioRank); 
+	error_check(ierr); 
 
-	// IO setup create cartesian communicators 	
-	int ioRank, ioSize, reorder = 0; 
-	int dims_mpi[NDIM], coords[NDIM], periods[NDIM];
 	int loopCounter[NUM_WIN]; 
 
-	// initialise dims, coords and periods
-	for(int i = 0; i < NDIM; i++)
-	{
-		dims_mpi[i] = 0; 
-		coords[i] = 0; 
-		periods[i] = 0; 
-	}
-	MPI_Comm_rank(ioParams->ioComm, &ioRank); 
-	MPI_Comm_size(ioParams->ioComm, &ioSize); 
-
-	// Cartesian communicator setup 
-	ierr = MPI_Dims_create(ioSize, NDIM, dims_mpi);
-	error_check(ierr);
-	ierr = MPI_Cart_create(ioParams->ioComm, NDIM, dims_mpi, periods, reorder, &ioParams->cartcomm); //comm
-	error_check(ierr);
-	ierr = MPI_Cart_coords(ioParams->cartcomm, ioRank, NDIM, coords);
-	error_check(ierr);
-
+	// Allocate cartesian communicator, adios2 objects	
+	ioServerInitialise(ioParams); 
+	
 	arrayParamsInit(ioParams); 
 
 	// allocate shared windows 

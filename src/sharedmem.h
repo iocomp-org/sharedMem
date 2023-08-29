@@ -128,6 +128,7 @@ void fileNameInit(struct params* ioParams, char filenames[NUM_WIN][100]);
 void verify(struct params *ioparams); 
 int valueCheck(struct params *ioParams, double* iodata_test, double val, int windowNum, int iter); 
 void initDebugFile(struct params* ioParams, int globalRank); 
+void ioServerInitialise(struct params *ioParams); 
 
 // Writing functions 
 void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams);
