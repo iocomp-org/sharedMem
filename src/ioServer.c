@@ -178,8 +178,14 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		error_check(ierr); 
 	} 
 
-	// Finalise ADIOS2 objects
-	adios2_finalize(ioParams->adios);
+	// Finalise ADIOS2 object
+	if(ioParams->ioLibNum >=2 && ioParams->ioLibNum <= 4)
+	{
+		adios2_finalize(ioParams->adios);
+#ifndef NDEBUG 
+		fprintf(ioParams->debug, "ioServer->adios2 finalised\n"); 
+#endif	
+	} 
 
 #ifdef IOBW
 	iobw(ioParams); 
