@@ -12,27 +12,30 @@ void verify(struct params *ioParams)
 	int myRank;
 	MPI_Comm_rank(ioParams->ioComm, &myRank); 
 #ifndef NDEBUG
-		fprintf(ioParams->debug, "Verification started \n"); 
+	fprintf(ioParams->debug, "Verification started \n"); 
 #endif 
 
-
+	// adios2 initialise object and i/o variable 
+	if(ioParams->ioLibNum >=2 && ioParams->ioLibNum <= 4)
+	{
 #if ADIOS2_USE_MPI
 		ioParams->adios_read = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
 #else 
 		ioParams->adios_read = adios2_init();  
 #endif 
 		adios2_set_engine(ioParams->io,ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); 
+	} 
 
 	double a , b, c, val; 
-	
+
 	// Initialise 
 	a = 1.0;
 	b = 2.0; 
 	c = 0.0; 
-	
+
 	for(int iter = 0; iter < AVGLOOPCOUNT; iter++)
 	{
-		
+
 		b = SCALAR * c; 
 
 		c = a + b; 
@@ -52,18 +55,18 @@ void verify(struct params *ioParams)
 			switch(windowNum)
 			{
 				case(0):
-						val = a; 
-						break; 
+					val = a; 
+					break; 
 				case(1): 
-						val = c; 
-						break; 
+					val = c; 
+					break; 
 				case(2): 
-						val = b; 
-						break; 
+					val = b; 
+					break; 
 				default: 
-						break; 
+					break; 
 			}
-			
+
 			char FILENAME[100]; 
 			strcpy(FILENAME, ioParams->WRITEFILE[windowNum][iter]); 
 
@@ -86,12 +89,12 @@ void verify(struct params *ioParams)
 			int test = valueCheck(ioParams, readData, val, windowNum, iter); 
 			int test_reduced;  
 #ifndef NDEBUG   
-					fprintf(ioParams->debug,"Filename %s Data read: \n", ioParams->WRITEFILE[windowNum][iter]); 
-					for(int i = 0; i < ioParams->localDataSize; i++)
-					{
-						fprintf(ioParams->debug,"%lf, ", readData[i]); 
-					}
-					fprintf(ioParams->debug,"\n"); 
+			fprintf(ioParams->debug,"Filename %s Data read: \n", ioParams->WRITEFILE[windowNum][iter]); 
+			for(int i = 0; i < ioParams->localDataSize; i++)
+			{
+				fprintf(ioParams->debug,"%lf, ", readData[i]); 
+			}
+			fprintf(ioParams->debug,"\n"); 
 #endif       
 
 			// sync all values of test, if multiplication comes back as 0 it means
@@ -112,7 +115,7 @@ void verify(struct params *ioParams)
 			readData = NULL; 
 		} 
 	} 
-	
+
 #ifndef NDEBUG   
 	fprintf(ioParams->debug,"iodata test freed\n"); 
 #endif       
