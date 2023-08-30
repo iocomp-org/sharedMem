@@ -23,6 +23,7 @@ void winTest(struct params *ioParams,double* array, int windowNum, int* loopCoun
 		fprintf(ioParams->debug, "ioServer window:%i flag positive \n",windowNum); 
 #endif
 		fileWrite(ioParams, array, loopCounter, windowNum); 
+		ioParams->writeComplete[windowNum] = 1; 
 	}
 
 } 

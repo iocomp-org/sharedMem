@@ -79,6 +79,9 @@ struct params
 	// initialise flag variable to test for window completion
 	int flagReturn[NUM_WIN];
 
+	// flag to test if write has been completed 
+	int writeComplete[NUM_WIN]; 
+
 	// file object for debug 
 #ifndef NDEBUG
 	char debugFile[100]; 

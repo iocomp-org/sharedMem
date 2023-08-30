@@ -83,10 +83,11 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		}
 #endif 
 	}
-
+	
 	for(int i = 0; i< NUM_WIN; i++)
 	{
 		ioParams->flagReturn[i] = 0; 
+		ioParams->writeComplete[i] = 0; 
 	} 
 
 	/* 
@@ -119,6 +120,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					ierr = MPI_Win_wait(ioParams->win_ptr[i]); 
 					error_check(ierr); 
 					fileWrite(ioParams, array[i], loopCounter, i); 
+					ioParams->writeComplete[i] = 1; 
 				}
 				else if(wintestflags[i]==WIN_TEST) 
 				{
@@ -128,7 +130,9 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					 */ 
 					winTest(ioParams,array[i], i, loopCounter); 
 				}
-				else
+				
+				// if previously written, or newly activated window 
+				if(ioParams->flagReturn[i]!=0 || wintestflags[i]==WIN_ACTIVATE || ioParams->writeComplete[i]==1)
 				{
 					/* 
 					 * otherwise start sync process again. Post window for starting access to array 
