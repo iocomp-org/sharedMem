@@ -119,6 +119,7 @@ struct params
 	int adios2Init; 
 	// adios2 object 
 	adios2_adios *adios;  
+	adios2_adios *adios_read;  
 	// adios2 io object 
 	adios2_io* io; 
 	// adios2 variable object 

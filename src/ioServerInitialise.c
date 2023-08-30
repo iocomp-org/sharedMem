@@ -71,7 +71,7 @@ void ioServerInitialise(struct params *ioParams)
 #if ADIOS2_USE_MPI
 		ioParams->adios = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
 #else 
-		adios2_adios *adios = adios2_init();  
+		ioParams->adios  = adios2_init();  
 #endif 
 		assert(ioParams->adios != NULL); 
 

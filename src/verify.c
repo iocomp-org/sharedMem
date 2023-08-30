@@ -11,10 +11,17 @@ void verify(struct params *ioParams)
 	MPI_Barrier(ioParams->ioComm); 
 	int myRank;
 	MPI_Comm_rank(ioParams->ioComm, &myRank); 
+#ifndef NDEBUG
+		fprintf(ioParams->debug, "Verification started \n"); 
+#endif 
 
-	// initialise data buffer to store data read locally 
-	double* readData; 
-	readData = (double *) malloc(sizeof(double)*ioParams->localDataSize); 
+
+#if ADIOS2_USE_MPI
+		ioParams->adios_read = adios2_init_config_mpi(CONFIG_FILE_ADIOS2, ioParams->cartcomm);  
+#else 
+		ioParams->adios_read = adios2_init();  
+#endif 
+		adios2_set_engine(ioParams->io,ioParams->ADIOS2_IOENGINES[ioParams->ioLibNum-2]); 
 
 	double a , b, c, val; 
 	
@@ -38,6 +45,10 @@ void verify(struct params *ioParams)
 		// read all the windows and iterations 
 		for(int windowNum = 0; windowNum < NUM_WIN; windowNum++)
 		{
+			// initialise data buffer to store data read locally 
+			double* readData; 
+			readData = (double *) malloc(sizeof(double)*ioParams->localDataSize); 
+
 			switch(windowNum)
 			{
 				case(0):
@@ -75,7 +86,7 @@ void verify(struct params *ioParams)
 			int test = valueCheck(ioParams, readData, val, windowNum, iter); 
 			int test_reduced;  
 #ifndef NDEBUG   
-					fprintf(ioParams->debug,"Verification failed, data read: \n"); 
+					fprintf(ioParams->debug,"Filename %s Data read: \n", ioParams->WRITEFILE[windowNum][iter]); 
 					for(int i = 0; i < ioParams->localDataSize; i++)
 					{
 						fprintf(ioParams->debug,"%lf, ", readData[i]); 
@@ -97,11 +108,11 @@ void verify(struct params *ioParams)
 					printf("Verification passed for filename %s \n", FILENAME); 
 				}
 			}
+			free(readData); 
+			readData = NULL; 
 		} 
 	} 
 	
-	free(readData); 
-	readData = NULL; 
 #ifndef NDEBUG   
 	fprintf(ioParams->debug,"iodata test freed\n"); 
 #endif       
