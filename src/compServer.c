@@ -149,14 +149,16 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 		// SCALE
 		// send message to ioServer to print via broadcast
-		wintestflags[WIN_A] = WIN_DEACTIVATE;  
-		wintestflags[WIN_C] = WIN_DEACTIVATE; 
 		if(iter > 0)
 		{
+			wintestflags[WIN_A] = WIN_TEST;  
+			wintestflags[WIN_C] = WIN_TEST; 
 			wintestflags[WIN_B] = WIN_WAIT; 
 		}
 		else
 		{
+			wintestflags[WIN_A] = WIN_DEACTIVATE;  
+			wintestflags[WIN_C] = WIN_DEACTIVATE; 
 			wintestflags[WIN_B] = WIN_ACTIVATE; 
 		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
@@ -183,16 +185,18 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 		// ADD 
 		// send message to ioServer to print via broadcast
-		wintestflags[WIN_A] = WIN_DEACTIVATE;  
 		if(iter > 0)
 		{
+			wintestflags[WIN_A] = WIN_TEST;  
 			wintestflags[WIN_C] = WIN_WAIT; 
+			wintestflags[WIN_B] = WIN_TEST; 
 		}
 		else
 		{
+			wintestflags[WIN_A] = WIN_DEACTIVATE;  
 			wintestflags[WIN_C] = WIN_ACTIVATE; 
+			wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		}
-		wintestflags[WIN_B] = WIN_DEACTIVATE; 
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
@@ -221,14 +225,16 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// send message to ioServer to print via broadcast
 		if(iter > 0)
 		{
-			wintestflags[WIN_A] = WIN_WAIT; 
+			wintestflags[WIN_A] = WIN_WAIT;  
+			wintestflags[WIN_C] = WIN_TEST; 
+			wintestflags[WIN_B] = WIN_TEST; 
 		}
 		else
 		{
 			wintestflags[WIN_A] = WIN_ACTIVATE;  
-		} 
-		wintestflags[WIN_C] = WIN_DEACTIVATE; 
-		wintestflags[WIN_B] = WIN_DEACTIVATE; 
+			wintestflags[WIN_C] = WIN_DEACTIVATE; 
+			wintestflags[WIN_B] = WIN_DEACTIVATE; 
+		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 

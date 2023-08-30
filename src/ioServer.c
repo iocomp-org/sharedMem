@@ -83,7 +83,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		}
 #endif 
 	}
-	
+
 	for(int i = 0; i< NUM_WIN; i++)
 	{
 		ioParams->flagReturn[i] = 0; 
@@ -114,12 +114,15 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					 * if wait activated BUT MPI win test has returned a non successful
 					 * value. After call returns call file write. 
 					 */ 
+					ierr = MPI_Win_wait(ioParams->win_ptr[i]); 
+					error_check(ierr); 
 #ifndef NDEBUG 
 					fprintf(ioParams->debug, "ioServer window:%i flag negative and win wait implemented\n", i); 
 #endif 
-					ierr = MPI_Win_wait(ioParams->win_ptr[i]); 
-					error_check(ierr); 
 					fileWrite(ioParams, array[i], loopCounter, i); 
+#ifndef NDEBUG 
+					fprintf(ioParams->debug, "ioServer window:%i filewrite called\n", i); 
+#endif 
 					ioParams->writeComplete[i] = 1; 
 				}
 				else if(wintestflags[i]==WIN_TEST && ioParams->writeComplete[i]==0) 
@@ -130,7 +133,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					 */ 
 					winTest(ioParams,array[i], i, loopCounter); 
 				}
-				
+
 				if(wintestflags[i]==WIN_ACTIVATE || ioParams->writeComplete[i]==1)
 				{
 					/*
@@ -142,6 +145,10 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 #ifndef NDEBUG 
 					fprintf(ioParams->debug, "ioServer window:%i MPI post loopCounter %i\n", i, loopCounter[i]); 
 #endif 
+					// initialise write complete and flag return flags after MPI post
+					// called 
+					ioParams->writeComplete[i] = 0; 
+					ioParams->flagReturn[i] = 0; 
 #ifdef IOBW	
 					ioParams->winTime_start[i] = MPI_Wtime();
 #endif 
@@ -176,12 +183,18 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 	for(int i = 0; i < NUM_WIN; i++)
 	{
 		// wait for completion of all windows 
-		ierr = MPI_Win_wait(ioParams->win_ptr[i]); 
-		error_check(ierr); 
-		fileWrite(ioParams, array[i], loopCounter, i); 
+		if(ioParams->writeComplete[i]==0)
+		{
 #ifndef NDEBUG 
-		fprintf(ioParams->debug, "ioServer window:%i win wait reached\n",i); 
+			fprintf(ioParams->debug, "ioServer -> window wait reached for window %i \n", i); 
 #endif 
+			ierr = MPI_Win_wait(ioParams->win_ptr[i]); 
+			error_check(ierr); 
+			fileWrite(ioParams, array[i], loopCounter, i); 
+#ifndef NDEBUG 
+			fprintf(ioParams->debug, "ioServer window:%i win wait reached\n",i); 
+#endif 
+		} 
 		ierr = MPI_Win_free(&ioParams->win_ptr[i]);
 		error_check(ierr); 
 	} 
