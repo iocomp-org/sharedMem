@@ -108,7 +108,7 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 		{
 			if(wintestflags[i] > WIN_DEACTIVATE) // anything over 0 means go for printing 
 			{
-				if(wintestflags[i]==WIN_WAIT && ioParams->flagReturn[i]==0)  
+				if(wintestflags[i]==WIN_WAIT && ioParams->writeComplete[i]==0)  
 				{
 					/* 
 					 * if wait activated BUT MPI win test has returned a non successful
@@ -122,21 +122,20 @@ void ioServer(MPI_Comm ioComm, MPI_Comm newComm, struct params *ioParams)
 					fileWrite(ioParams, array[i], loopCounter, i); 
 					ioParams->writeComplete[i] = 1; 
 				}
-				else if(wintestflags[i]==WIN_TEST) 
+				else if(wintestflags[i]==WIN_TEST && ioParams->writeComplete[i]==0) 
 				{
 					/* 
-					 * if WIN TEST flag is passed, call MPI win test, and if successful
-					 * then call file write 
+					 * if WIN TEST flag is passed, and file has not been written out, call MPI win test, 
+					 * and if successful then call file write 
 					 */ 
 					winTest(ioParams,array[i], i, loopCounter); 
 				}
 				
-				// if previously written, or newly activated window 
-				if(ioParams->flagReturn[i]!=0 || wintestflags[i]==WIN_ACTIVATE || ioParams->writeComplete[i]==1)
+				if(wintestflags[i]==WIN_ACTIVATE || ioParams->writeComplete[i]==1)
 				{
-					/* 
-					 * otherwise start sync process again. Post window for starting access to array 
-					 * and then call MPI win test.  
+					/*
+					 * if previously written, or newly activated window then start sync
+					 * process again with a call to MPI win post
 					 */ 
 					ierr = MPI_Win_post(group, 0, ioParams->win_ptr[i]);
 					error_check(ierr); 
