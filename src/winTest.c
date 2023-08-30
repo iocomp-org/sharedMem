@@ -19,10 +19,12 @@ void winTest(struct params *ioParams,double* array, int windowNum, int* loopCoun
 	// if WINDOW ready to be written:  
 	if(ioParams->flagReturn[windowNum])
 	{
+		printf("window %i, flag is positive going for writing \n", windowNum); 
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "ioServer window:%i flag positive \n",windowNum); 
 #endif
 		fileWrite(ioParams, array, loopCounter, windowNum); 
+		printf("window %i, after filewrite \n", windowNum); 
 		ioParams->writeComplete[windowNum] = 1; 
 	}
 

@@ -195,7 +195,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		{
 			wintestflags[WIN_A] = WIN_DEACTIVATE;  
 			wintestflags[WIN_C] = WIN_ACTIVATE; 
-			wintestflags[WIN_B] = WIN_DEACTIVATE; 
+			wintestflags[WIN_B] = WIN_TEST; 
 		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
@@ -232,8 +232,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		else
 		{
 			wintestflags[WIN_A] = WIN_ACTIVATE;  
-			wintestflags[WIN_C] = WIN_DEACTIVATE; 
-			wintestflags[WIN_B] = WIN_DEACTIVATE; 
+			wintestflags[WIN_C] = WIN_TEST; 
+			wintestflags[WIN_B] = WIN_TEST; 
 		}
 		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
