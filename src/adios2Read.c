@@ -9,11 +9,15 @@
 
 void adios2Read(double* iodata, char* FILENAME, struct params *ioParams)
 {
-		adios2_engine *engine = adios2_open(ioParams->io, FILENAME, adios2_mode_read);
+	adios2_error errio; 
+	adios2_engine *engine = adios2_open(ioParams->io, FILENAME, adios2_mode_read);
+	assert(engine!=NULL); 
 
-    adios2_variable *var_greeting = adios2_inquire_variable(ioParams->io, "iodata");
+	adios2_variable *var_greeting = adios2_inquire_variable(ioParams->io, "iodata");
+	assert(var_greeting!=NULL);
 
-    adios2_get(engine, var_greeting, iodata, adios2_mode_deferred);
+	errio = adios2_get(engine, var_greeting, iodata, adios2_mode_deferred);
+	error_check(errio); 
 
-    adios2_close(engine);
+	adios2_close(engine);
 } 
