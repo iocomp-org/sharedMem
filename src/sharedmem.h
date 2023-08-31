@@ -158,6 +158,7 @@ void winTest(struct params *ioParams,double* array, int windowNum, int* loopCoun
 void add(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_C, MPI_Group group, double* a, double *b, double *c); 
 void triad(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_C, MPI_Group group, double* a, double *b, double *c); 
 void scale(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_B, MPI_Group group, double *b, double *c); 
+void copy(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_C, MPI_Group group, double* a, double *c); 
 
 // Writing functions 
 void mpiiowrite(double* iodata, char* FILENAME, struct params* ioParams);

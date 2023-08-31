@@ -111,80 +111,20 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 #ifndef NDEBUG 
 		fprintf(ioParams->debug, "compServer -> LOOP number %i \n", iter+1); 
 #endif 
-		//		// COPY
-		//		// send message to ioServer to print via broadcast
-		//		ioParams->wintestflags[WIN_A] = WIN_DEACTIVATE;  
-		//		// wait for C window from previous loop
-		//		if(iter > 0)
-		//		{
-		//			ioParams->wintestflags[WIN_C] = WIN_WAIT; 
-		//		}
-		//		else
-		//		{
-		//			ioParams->wintestflags[WIN_C] = WIN_ACTIVATE; 
-		//		}
-		//		ioParams->wintestflags[WIN_B] = WIN_DEACTIVATE; 
-		//		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-		//#ifndef NDEBUG 
-		//		printf("compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
-		//#endif 
-		//
-		//		compTimer[COPY][iter] = MPI_Wtime();  
-		//		MPI_Win_start(group, 0, win_C); 
-		//#ifndef NDEBUG 
-		//		printf("compServer -> After win start for C \n"); 
-		//#endif 
-		//
-		//		for(int i = 0; i < ioParams->localDataSize; i++)
-		//		{
-		//			c[i] = a[i]; 
-		//		}
-		//
-		//		MPI_Win_complete(win_C); 
-		//		compTimer[COPY][iter] = MPI_Wtime() - compTimer[COPY][iter]; 
-		//#ifndef NDEBUG 
-		//		printf("compServer -> After mpi window unlock for C \n"); 
-		//#endif 
+
+		/*
+		 * update control variable, WIN_WAIT/ACTIVATE for C
+		 * TEST/DEACTIVATE for the rest 
+		 * COPY kernel C=A
+		 */ 
+		// copy(ioParams,iter,newComm,win_C,group, a,c); 
 
 		/*
 		 * update control variable, WIN_WAIT/ACTIVATE for B
 		 * TEST/DEACTIVATE for the rest 
 		 * SCALE kernel B=SCALAR*C
 		 */ 
-		if(iter > 0)
-		{
-			ioParams->wintestflags[WIN_A] = WIN_TEST;  
-			ioParams->wintestflags[WIN_C] = WIN_TEST; 
-			ioParams->wintestflags[WIN_B] = WIN_WAIT; 
-		}
-		else
-		{
-			ioParams->wintestflags[WIN_A] = WIN_DEACTIVATE;  
-			ioParams->wintestflags[WIN_C] = WIN_DEACTIVATE; 
-			ioParams->wintestflags[WIN_B] = WIN_ACTIVATE; 
-		}
-		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
-#ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
-#endif 
-
-		ioParams->compTimer[SCALE][iter] = MPI_Wtime(); 
-		MPI_Win_start(group, 0, win_B); 
-#ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> After win start for B\n"); 
-#endif 
-
-		for(int i = 0; i < ioParams->localDataSize; i++)
-		{
-			b[i] = SCALAR * c[i]; 
-		}
-
-		MPI_Win_complete(win_B); 
-		ioParams->compTimer[SCALE][iter] = MPI_Wtime() - ioParams->compTimer[SCALE][iter]; 
-#ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> After mpi window unlock for B \n"); 
-#endif 
-		// scale(ioParams,iter,newComm,win_C,group, b,c); 
+		scale(ioParams,iter,newComm,win_B,group, b,c); 
 
 		/*
 		 * update control variable, WIN_WAIT/ACTIVATE for C
