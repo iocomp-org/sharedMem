@@ -26,10 +26,14 @@ void copy(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_C, MP
 	printf("compServer -> After win start for C \n"); 
 #endif 
 
-	for(int i = 0; i < ioParams->localDataSize; i++)
+	/* outer loop to increase compute workload */ 
+	for(int j = 0; j < COMPLOOPCOUNT; j++)
 	{
-		c[i] = a[i]; 
-	}
+		for(int i = 0; i < ioParams->localDataSize; i++)
+		{
+			c[i] = a[i]; 
+		}
+	} 
 
 	MPI_Win_complete(win_C); 
 	ioParams->compTimer[COPY][iter] = MPI_Wtime() - ioParams->compTimer[COPY][iter]; 

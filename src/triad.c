@@ -28,10 +28,14 @@ void triad(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_A, M
 	fprintf(ioParams->debug, "compServer -> After mpi start for A \n"); 
 #endif 
 
-	for(int i = 0; i < ioParams->localDataSize; i++)
+	/* outer loop to increase compute workload */ 
+	for(int j = 0; j < COMPLOOPCOUNT; j++)
 	{
-		a[i] = b[i] + SCALAR*c[i]; 
-	}
+		for(int i = 0; i < ioParams->localDataSize; i++)
+		{
+			a[i] = b[i] + SCALAR*c[i]; 
+		}
+	} 
 
 	MPI_Win_complete(win_A); 
 	ioParams->compTimer[TRIAD][iter] = MPI_Wtime() - ioParams->compTimer[TRIAD][iter]; 

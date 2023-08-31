@@ -16,6 +16,8 @@
 
 // define avg loop count of stream kernels
 #define AVGLOOPCOUNT 10
+// define number of compute cycles per avg loop count 
+#define COMPLOOPCOUNT 10 
 
 // define problem size and dimension of data 
 #define NDIM 2
