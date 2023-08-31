@@ -8,10 +8,10 @@ void compPrints(struct params *ioParams)
 	char STREAM_kernels[4][100] = {"COPY", "SCALE", "ADD", "TRIAD"}; 
 	// stream data size used in different kernels 
 	double bytes[NUM_KERNELS]; 
-	bytes[COPY]			= 2*ioParams->localDataSize*sizeof(double); 
-	bytes[SCALE]		= 2*ioParams->localDataSize*sizeof(double); 
-	bytes[ADD]			= 3*ioParams->localDataSize*sizeof(double); 
-	bytes[TRIAD]		= 3*ioParams->localDataSize*sizeof(double); 
+	bytes[COPY]			= 2*ioParams->localDataSize*sizeof(double)*COMPLOOPCOUNT; 
+	bytes[SCALE]		= 2*ioParams->localDataSize*sizeof(double)*COMPLOOPCOUNT; 
+	bytes[ADD]			= 3*ioParams->localDataSize*sizeof(double)*COMPLOOPCOUNT; 
+	bytes[TRIAD]		= 3*ioParams->localDataSize*sizeof(double)*COMPLOOPCOUNT; 
 
 	// calculate max, min, avg across loops across ranks. 
 	double minTime[NUM_KERNELS], maxTime[NUM_KERNELS]; 
