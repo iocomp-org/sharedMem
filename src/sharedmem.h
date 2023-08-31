@@ -82,6 +82,9 @@ struct params
 	// flag to test if write has been completed 
 	int writeComplete[NUM_WIN]; 
 
+	// sync access control flags 
+	int wintestflags[NUM_WIN]; 	
+
 	// file object for debug 
 #ifndef NDEBUG
 	char debugFile[100]; 

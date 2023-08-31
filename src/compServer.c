@@ -21,10 +21,9 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 	// initialise window test flags with 0 
 	// assign them 1 if ready for writing 
-	int wintestflags[NUM_WIN]; 	
 	for(int j = 0; j < NUM_WIN; j++)
 	{
-		wintestflags[j] = 0; 
+		ioParams->wintestflags[j] = 0; 
 	} 
 
 	// declare and initialise timers for NUM WIN = 3 and start wall Time
@@ -73,12 +72,12 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 
 	// INITIALISE A
 	// send message to ioServer to print via broadcast
-//	wintestflags[WIN_A] = WIN_ACTIVATE;  
-//	wintestflags[WIN_C] = WIN_DEACTIVATE; 
-//	wintestflags[WIN_B] = WIN_DEACTIVATE; 
-//	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+//	ioParams->wintestflags[WIN_A] = WIN_ACTIVATE;  
+//	ioParams->wintestflags[WIN_C] = WIN_DEACTIVATE; 
+//	ioParams->wintestflags[WIN_B] = WIN_DEACTIVATE; 
+//	MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 //#ifndef NDEBUG 
-//	printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+//	printf("compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 //#endif 
 //	MPI_Win_start(group, 0, win_A); 
 //#ifndef NDEBUG 
@@ -114,20 +113,20 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 #endif 
 //		// COPY
 //		// send message to ioServer to print via broadcast
-//		wintestflags[WIN_A] = WIN_DEACTIVATE;  
+//		ioParams->wintestflags[WIN_A] = WIN_DEACTIVATE;  
 //		// wait for C window from previous loop
 //		if(iter > 0)
 //		{
-//			wintestflags[WIN_C] = WIN_WAIT; 
+//			ioParams->wintestflags[WIN_C] = WIN_WAIT; 
 //		}
 //		else
 //		{
-//			wintestflags[WIN_C] = WIN_ACTIVATE; 
+//			ioParams->wintestflags[WIN_C] = WIN_ACTIVATE; 
 //		}
-//		wintestflags[WIN_B] = WIN_DEACTIVATE; 
-//		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+//		ioParams->wintestflags[WIN_B] = WIN_DEACTIVATE; 
+//		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 //#ifndef NDEBUG 
-//		printf("compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+//		printf("compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 //#endif 
 //
 //		compTimer[COPY][iter] = MPI_Wtime();  
@@ -151,19 +150,19 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// send message to ioServer to print via broadcast
 		if(iter > 0)
 		{
-			wintestflags[WIN_A] = WIN_TEST;  
-			wintestflags[WIN_C] = WIN_TEST; 
-			wintestflags[WIN_B] = WIN_WAIT; 
+			ioParams->wintestflags[WIN_A] = WIN_TEST;  
+			ioParams->wintestflags[WIN_C] = WIN_TEST; 
+			ioParams->wintestflags[WIN_B] = WIN_WAIT; 
 		}
 		else
 		{
-			wintestflags[WIN_A] = WIN_DEACTIVATE;  
-			wintestflags[WIN_C] = WIN_DEACTIVATE; 
-			wintestflags[WIN_B] = WIN_ACTIVATE; 
+			ioParams->wintestflags[WIN_A] = WIN_DEACTIVATE;  
+			ioParams->wintestflags[WIN_C] = WIN_DEACTIVATE; 
+			ioParams->wintestflags[WIN_B] = WIN_ACTIVATE; 
 		}
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 #endif 
 
 		ioParams->compTimer[SCALE][iter] = MPI_Wtime(); 
@@ -187,19 +186,19 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// send message to ioServer to print via broadcast
 		if(iter > 0)
 		{
-			wintestflags[WIN_A] = WIN_TEST;  
-			wintestflags[WIN_C] = WIN_WAIT; 
-			wintestflags[WIN_B] = WIN_TEST; 
+			ioParams->wintestflags[WIN_A] = WIN_TEST;  
+			ioParams->wintestflags[WIN_C] = WIN_WAIT; 
+			ioParams->wintestflags[WIN_B] = WIN_TEST; 
 		}
 		else
 		{
-			wintestflags[WIN_A] = WIN_DEACTIVATE;  
-			wintestflags[WIN_C] = WIN_ACTIVATE; 
-			wintestflags[WIN_B] = WIN_TEST; 
+			ioParams->wintestflags[WIN_A] = WIN_DEACTIVATE;  
+			ioParams->wintestflags[WIN_C] = WIN_ACTIVATE; 
+			ioParams->wintestflags[WIN_B] = WIN_TEST; 
 		}
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 #endif 
 
 		ioParams->compTimer[ADD][iter] = MPI_Wtime(); 
@@ -225,19 +224,19 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		// send message to ioServer to print via broadcast
 		if(iter > 0)
 		{
-			wintestflags[WIN_A] = WIN_WAIT;  
-			wintestflags[WIN_C] = WIN_TEST; 
-			wintestflags[WIN_B] = WIN_TEST; 
+			ioParams->wintestflags[WIN_A] = WIN_WAIT;  
+			ioParams->wintestflags[WIN_C] = WIN_TEST; 
+			ioParams->wintestflags[WIN_B] = WIN_TEST; 
 		}
 		else
 		{
-			wintestflags[WIN_A] = WIN_ACTIVATE;  
-			wintestflags[WIN_C] = WIN_TEST; 
-			wintestflags[WIN_B] = WIN_TEST; 
+			ioParams->wintestflags[WIN_A] = WIN_ACTIVATE;  
+			ioParams->wintestflags[WIN_C] = WIN_TEST; 
+			ioParams->wintestflags[WIN_B] = WIN_TEST; 
 		}
-		MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+		MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-		fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+		fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 #endif 
 
 		ioParams->compTimer[TRIAD][iter] = MPI_Wtime(); 
@@ -259,12 +258,12 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	} 
 
 	// send message to ioServer to free the windows and exit the recv loop
-	wintestflags[WIN_A] = WIN_FREE;  
-	wintestflags[WIN_C] = WIN_FREE; 
-	wintestflags[WIN_B] = WIN_FREE; 
-	MPI_Bcast( wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
+	ioParams->wintestflags[WIN_A] = WIN_FREE;  
+	ioParams->wintestflags[WIN_C] = WIN_FREE; 
+	ioParams->wintestflags[WIN_B] = WIN_FREE; 
+	MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-	fprintf(ioParams->debug, "compServer -> after MPI bcast, wintestflags [%i,%i,%i] \n", wintestflags[0], wintestflags[1], wintestflags[2]); 
+	fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 #endif 
 
 	// MPI_Barrier(MPI_COMM_WORLD); 	
