@@ -60,9 +60,10 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	win_B = outputWin.win; 
 	b = outputWin.array; 
 
-	/* groups newComm communicator's rank 0 and 1 into a group  
-	* comp process initialises array and creates a window with that array 
-	*/ 
+	/* 
+	 * groups newComm communicator's rank 0 and 1 into a group  
+	 * comp process initialises array and creates a window with that array 
+	 */ 
 	MPI_Group comm_group, group;
 	int ranks[2]; 
 	for (int i=0;i<2;i++) {
@@ -93,7 +94,7 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 		 * TEST/DEACTIVATE for the rest 
 		 * COPY kernel C=A
 		 */ 
-		 // copy(ioParams,iter,newComm,win_C,group, a,c); 
+		// copy(ioParams,iter,newComm,win_C,group, a,c); 
 
 		/*
 		 * update control variable, WIN_WAIT/ACTIVATE for B
@@ -124,7 +125,8 @@ void compServer(MPI_Comm computeComm, MPI_Comm newComm, MPI_Comm globalComm, str
 	ioParams->wintestflags[WIN_B] = WIN_FREE; 
 	MPI_Bcast( ioParams->wintestflags, NUM_WIN, MPI_INT, 0, newComm); 
 #ifndef NDEBUG 
-	fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
+	fprintf(ioParams->debug, "compServer -> after MPI bcast, ioParams->wintestflags [%i,%i,%i] \n", 
+		ioParams->wintestflags[0], ioParams->wintestflags[1], ioParams->wintestflags[2]); 
 #endif 
 
 	dataSendComplete(win_A,ioParams); 
