@@ -13,11 +13,13 @@ module swap PrgEnv-cray PrgEnv-gnu
 module use /work/y07/shared/archer2-lmod/dev
 module load valgrind4hpc 
 module load cray-hdf5-parallel
+
 # adios2 dir 
 export ADIOS2_DIR=/work/e609/e609/shr203/opt/gnu/8.0.0/ADIOS2
 export LD_LIBRARY_PATH=${ADIOS2_DIR}/lib64:${LD_LIBRARY_PATH} 
-#module swap craype-network-ofi craype-network-ucx 
-#module swap cray-mpich cray-mpich-ucx 
+
+# recommended flag for better io performance 
+export FI_OFI_RXM_SAR_LIMIT=64K
 
 # EXE 
 export EXE=/mnt/lustre/a2fs-work3/work/e609/e609/shr203/sharedmem/src/sharedmem
@@ -49,8 +51,17 @@ fi
 # averaging parameter using slurm variable, set by passing array parameter 
 iter=${SLURM_ARRAY_TASK_ID}
 
+# Ensure the cpus-per-task option is propagated to srun commands
+export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
+
 FILESIZE=$((${N}*8/2**20))
 IOLIB=("MPIIO" "HDF5" "ADIOS2_HDF5" "ADIOS2_BP4" "ADIOS2_BP5") 
+
+# ARM map requirement 
+# module load arm/forge
+#
+# Total number of procs for ARM 
+TOTAL_PROCS=$((${SLURM_NNODES}*${SLURM_NTASKS_PER_NODE}))
 
 for io in $(seq ${IOSTART} ${IOEND})
 do 
@@ -63,13 +74,12 @@ do
   cp ${CONFIG} ${RUNDIR}
   lfs setstripe -c -1 ${RUNDIR}
   cd ${RUNDIR} 
-  export SRUN_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 
   echo "Job started " $(date +"%T") # start time 
   echo "N" ${N} "IO" ${io} "FILESIZE" ${FILESIZE}MiB
 
   srun --hint=nomultithread  --distribution=block:block ${EXE} --N ${N} --io ${io} > test.out 
-
+  # map --mpi=slurm -n ${TOTAL_PROCS} --mpiargs="--hint=nomultithread --distribution=block:block" --profile ${EXE} --N ${N} --io ${io} 
   wait 
 done 
 
