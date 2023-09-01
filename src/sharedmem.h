@@ -17,7 +17,7 @@
 // define avg loop count of stream kernels
 #define AVGLOOPCOUNT 10
 // define number of compute cycles per avg loop count 
-#define COMPLOOPCOUNT 10 
+#define COMPLOOPCOUNT 10
 
 // define problem size and dimension of data 
 #define NDIM 2
@@ -155,6 +155,7 @@ void initDebugFile(struct params* ioParams, int globalRank);
 void ioServerInitialise(struct params *ioParams); 
 void compPrints(struct params *ioParams); 
 void winTest(struct params *ioParams,double* array, int windowNum, int* loopCounter); 
+void iobw(struct params *ioParams); 
 
 // Comp server functions 
 void add(struct params *ioParams, int iter, MPI_Comm newComm, MPI_Win win_C, MPI_Group group, double* a, double *b, double *c); 
