@@ -8,3 +8,6 @@ run_dir/*
 *.out 
 *.err
 sharedmem
+plots/data/iocomp/IOCOMP/
+plots/output/
+plots/scripts/__pycache__/
