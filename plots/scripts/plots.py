@@ -33,11 +33,11 @@ num_procs_list = [
     512,
     1024, 
     2048,
-    4096
+    # 4096
 ]
 
 stream_list = [
-    "Copy(s)",
+    # "Copy(s)",
     "Scalar(s)",
     "Add(s)",
     "Triad(s)"
@@ -74,7 +74,7 @@ def plot_compare_walltime_with_iocomp(json_data, iocomp_data, args):
         fig1, ax1 = plt.subplots(2, 2,figsize=(10,10),sharey=True)
         ioLayer_iter = 0 
     else:
-        plt.figure()
+        fig1 = plt.figure()
 
     for IO_key in  IOLAYERLIST:
 
@@ -157,7 +157,7 @@ def plot_walltime(json_data, args):
         fig1, ax1 = plt.subplots(2, 2,figsize=(10,10),sharey=True)
         ioLayer_iter = 0 
     else:
-        plt.figure()
+        fig1 = plt.figure()
 
     for IO_key, Node_list in json_object.items(): 
 
@@ -225,7 +225,7 @@ def plot_comptime(json_data, args, iocompdata=None):
         fig1, ax1 = plt.subplots(2, 2,figsize=(10,10),sharey=True)
         ioLayer_iter = 0 
     else:
-        plt.figure()
+        fig1 = plt.figure()
 
     for IO_key, Node_list in json_object.items(): 
 
