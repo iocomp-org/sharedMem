@@ -24,6 +24,7 @@ The repository is arranged as follows:
 
 # Set up of sharedMem
 ## Compilation 
+The repository has been tested with MPICH-4.0, ADIOS2-2.9.1, HDF5-1.12.1 although it runs with earlier versions of ADIOS2 and HDF5 as well. 
 
 	cd src 
  	mkdir Object_dirs
