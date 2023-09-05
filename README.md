@@ -102,12 +102,12 @@ Use the environment yml file to setup the environment for the plot scripts using
 
 ## Run plot scripts 
 Extract data used in research paper and run the plot script.
-- 'sharedMemdir'[plots/data/sharedMem] is the directory containing output files from the sharedMem.
-- 'iocompdir'[plots/data/iocomp] is the directory containing output files from iocomp.
+- ['sharedMemdir'](plots/data/sharedMem) is the directory containing output files from the sharedMem.
+- ['iocompdir'](plots/data/iocomp) is the directory containing output files from iocomp.
 - The plotting script will output the wall time plot and the computational time plot with the default directories. 
 - If only sharedMemdir is specified, then only the sharedMem output will be plotted. 
 - If both sharedMemdir and iocompdir are specified then both outputs will be plotted side by side for comparison.
-- 
+  
 To show the plot, input the following with the appropriate directories for iocomp and sharedMem. 
 
 	python3 main.py --iocompdir=../data/iocomp/IOCOMP --sharedMemdir=../data/sharedMem/OUTPUT	
