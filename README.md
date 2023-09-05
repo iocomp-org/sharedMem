@@ -78,11 +78,11 @@ Sample runtime command for a local system is:
 - NODELETE : adding this flag will disable automatic deletion of output file 
 
 # Run jobs on ARCHER2 
-runscript.sh contains the following variables:
+The [runscript](runscript.sh) contains the following variables:
 - IOSTART : starting I/O library
 - IOEND : ending I/O library  
 - ARRAY : SLURM job array options for averaging 
-- LOCAL SIZE : local problem size 
+- LOCAL_SIZE : local problem size 
 - DIR : parent directory to store output files and sub directories
 - QOS : standard or lowpriority determines the quality of service on ARCHER2
 - TIMES : array of times per job 
