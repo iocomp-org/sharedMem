@@ -23,8 +23,27 @@ The repository is arranged as follows:
 
 
 # Set up of sharedMem
-## Compilation 
+
+## Dependencies 
 The repository has been tested with MPICH-4.0, ADIOS2-2.9.1, HDF5-1.12.1 although it runs with earlier versions of ADIOS2 and HDF5 as well. 
+The instructions for installing HDF5 at the time of development are: 
+
+	wget  "https://support.hdfgroup.org/ftp/HDF5
+	/releases/hdf5-1.12/hdf5-1.12.2/
+	src/hdf5-1.12.2.tar.gz"
+	tar -xvf hdf5-1.12.2.tar.gz 
+	cd hdf5-1.12.0
+	CC=<path to compiler> ./configure  --enable-parallel --prefix=<install-directory>
+	make && make check && make install 
+ 
+The instructions for installing ADIOS2 at the time of development are: 
+
+	git clone https://github.com/ornladios/ADIOS2.git
+	mkdir adios2-build && cd adios2-build
+	cmake -DHDF5_ROOT = <HDF5 LOCATION>  -DMPI_C_COMPILER=<MPI COMPILER>  -DADIOS2_USE_HDF5  -DCMAKE_INSTALL_PREFIX=<INSTALL_LOCATION> ../ADIOS2 
+	make && make install 
+ 
+## Compilation 
 
 	cd src 
  	mkdir Object_dirs
