@@ -52,8 +52,12 @@ The instructions for installing ADIOS2 at the time of development are:
 ## Run time
 N is problem size per core.   
 io is I/O library selector, 0 for MPIIO, 1 for HDF5, 2 for ADIOS2 HDF5, 3 for ADIOS2 BP4
+The executable only runs with an even number of processes and will exit if this requirement is not met. 
+Sample runtime command for a local system is: 
 
-	../sharemem --N 10 --io 1 
+	cd run_dir
+	mpirun.mpich ../sharemem --N 10 --io 1 
+ 
 ### Preprocessor flags 
 - NDEBUG : adding this flag will disable debug printouts 
 - IOBW : adding this flag will enable bandwidth calculation and printing of
