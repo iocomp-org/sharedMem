@@ -26,6 +26,7 @@ The repository is arranged as follows:
 ## Compilation 
 
 	cd src 
+ 	mkdir Object_dirs
 	make CC=<compiler> HDF5_DIR=<path to HDF5> ADIOS2_DIR=<path to ADIOS2>
 
 ## Run time
@@ -52,7 +53,7 @@ runscript.sh contains the following variables:
 - NODE_END : ending value for loop over number of nodes as power of 2s. 
 
 ## run scripts for ARCHER2 
-	cd run_dir	
+	cd run_dir
 	bash runscript.sh 
 
 
