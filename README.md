@@ -50,9 +50,17 @@ The instructions for installing ADIOS2 at the time of development are:
 	make CC=<compiler> HDF5_DIR=<path to HDF5> ADIOS2_DIR=<path to ADIOS2>
 
 ## Run time
-N is problem size per core.   
-io is I/O library selector, 0 for MPIIO, 1 for HDF5, 2 for ADIOS2 HDF5, 3 for ADIOS2 BP4
+
+Command line arguments
+- N : Local problem size per core  
+- io : I/O backend selection. 
+    - 0 : MPIIO
+    - 1 : HDF5 
+    - 2 : ADIOS2_HDF5 
+    - 3 : ADIOS2_BP4 
+
 The executable only runs with an even number of processes and will exit if this requirement is not met. 
+
 Sample runtime command for a local system is: 
 
 	cd run_dir
