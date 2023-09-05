@@ -20,8 +20,12 @@ LOCAL_SIZE=$((2**24))
 # directory 
 DIR="OUTPUT"
 
+# Node start and end integer as power of 2s
+NODE_START = 0 
+NODE_END = 3
+
 # iterate over increasing number of nodes 
-for j in $(seq 0 4)
+for j in $(seq ${NODE_START} ${NODE_END})
 do
   # set time to custom time if defined, otherwise set it to array 
   if [[ -n ${TIME_CUSTOM} ]];
