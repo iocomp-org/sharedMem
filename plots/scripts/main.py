@@ -9,17 +9,17 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--save', action='store_true', help='Flag to save the plot, pass name flag for custom name for saved plot')  # if save used then fig is saved, otherwise plt.show
 parser.add_argument('--iocompdir',  help = 'Directory of outputs for iocomp')  # name of directory where to search 
-parser.add_argument('--artifactdir',  help = 'Directory of outputs for artifact')  # name of directory where to search 
+parser.add_argument('--sharedMemdir',  help = 'Directory of outputs for sharedMem')  # name of directory where to search 
 
 args = parser.parse_args()
 
 """
 Get data from sharedMem
 """
-if(args.artifactdir != None): 
-    json_data = trawl_files(f'{args.artifactdir}')
+if(args.sharedMemdir != None): 
+    json_data = trawl_files(f'{args.sharedMemdir}')
 else:
-    print("Please input the artifact directory. Exiting.")
+    print("Please input the sharedMem directory. Exiting.")
     exit() 
 
 """
@@ -29,7 +29,7 @@ if(args.iocompdir != None):
     iocomp_data = STREAM_iocomp_timers(f'{args.iocompdir}')
 
 """
-Compare wall time with icomp if iocompdir is specified. otherwise print out wall time for just artifact.
+Compare wall time with icomp if iocompdir is specified. otherwise print out wall time for just sharedMem.
 """
 if(args.iocompdir != None): 
     plot_compare_walltime_with_iocomp(json_data, iocomp_data, args)
@@ -38,8 +38,8 @@ else:
 
 
 """
-Plot compute time for artifact data and compare with iocomp if directory is given. 
-Otherwise plot compute time for only the artifact data
+Plot compute time for sharedMem data and compare with iocomp if directory is given. 
+Otherwise plot compute time for only the sharedMem data
 """
 if(args.iocompdir!=None): 
     plot_comptime(json_data, args, iocomp_data)
