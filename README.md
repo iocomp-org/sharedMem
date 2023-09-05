@@ -102,6 +102,7 @@ Use the environment yml file to setup the environment for the plot scripts using
 
 ## Run plot scripts 
 Extract data used in research paper and run the plot script to output the wall time plot and the computational time plot with the default directories.  
+The I/O libraries, number of processes, STREAM kernels can be specified in the [plot file](plots/scripts/plots.py). 
 The following command line options are used: 
 
 - [sharedMemdir](plots/data/sharedMem) is the directory containing output files from the sharedMem. If only this option is specified, 
