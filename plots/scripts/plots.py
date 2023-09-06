@@ -33,7 +33,7 @@ num_procs_list = [
     512,
     1024, 
     2048,
-    # 4096
+    4096
 ]
 
 stream_list = [
@@ -227,7 +227,7 @@ def plot_comptime(json_data, args, iocompdata=None):
     else:
         fig1 = plt.figure()
 
-    for IO_key, Node_list in json_object.items(): 
+    for IO_key in IOLAYERLIST: 
 
         compTime = {}  
 
@@ -286,7 +286,7 @@ def plot_comptime(json_data, args, iocompdata=None):
             fig1.supylabel(f'Total computational time(s)')
 
             # to not have the annoying bars 
-            # ax1[i,j].set_ylim([0,350])
+            ax1[i,j].set_ylim([0,800])
             # increment I/O layer counter that controls assignment of subplots in the plot  
             ioLayer_iter += 1 
 
